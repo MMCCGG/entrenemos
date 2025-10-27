@@ -1,0 +1,53 @@
+.program-card {
+  background: #fff;
+  border: 2px solid #000;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+  border-radius: 0;
+}
+
+.program-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.program-info {
+  flex: 1;
+}
+
+.program-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: black;
+  margin-bottom: 4px;
+}
+
+.program-details {
+  font-size: 14px;
+  color: #333;
+}
+
+.program-image {
+  width: 80px;
+  height: 80px;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid #000;
+}
+
+.program-image.trx {
+  background-image: url("/assets/trx-image.jpg");
+}
+
+.program-image.builder {
+  background-image: url("/assets/bb-image.jpg");
+}
+
+.program-image.basic {
+  background-image: url("/assets/bf-image.jpg");
+}
