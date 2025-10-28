@@ -1,0 +1,31 @@
+.app-container {
+  max-width: 414px;
+  margin: 0 auto;
+  background: #d3d3d3;
+  min-height: 100vh;
+  color: black;
+  font-family: "Stardos Stencil", sans-serif;
+}
+
+.main-content {
+  padding: 24px 16px;
+  padding-bottom: 100px;
+}
+
+.featured-programs {
+  margin-top: 16px;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: black;
+  margin-bottom: 20px;
+  text-transform: capitalize;
+}
+
+.programs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
