@@ -1,8 +1,8 @@
 import { Component } from "@angular/core";
-import { Header } from "../header/header";
-import { UserProfile } from "../user-profile/user-profile";
-import { ProgramCard } from "../program-card/program-card";
-import { BottomNav } from "../bottom-nav/bottom-nav";
+import { Header } from "../../components/header/header";
+import { UserProfile } from "../../components/user-profile/user-profile";
+import { ProgramCard } from "../../components/program-card/program-card";
+import { BottomNav } from "../../components/bottom-nav/bottom-nav";
 
 @Component({
   selector: "app-home",
