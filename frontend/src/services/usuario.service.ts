@@ -2,13 +2,7 @@ import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { API_BASE_URL } from "./api.config";
-
-export interface Usuario {
-  id?: number;
-  nombre: string;
-  email: string;
-  password?: string;
-}
+import { Usuario } from "../models/usuario.model";
 
 @Injectable({
   providedIn: "root",

@@ -2,16 +2,7 @@ import { Injectable, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { API_BASE_URL } from "./api.config";
-
-export interface Progreso {
-  id?: number;
-  fecha: string; // ISO date string
-  peso?: number;
-  repeticiones?: number;
-  tiempo?: number;
-  usuarioId: number;
-  ejercicioId: number;
-}
+import { Progreso } from "../models/progreso.model";
 
 @Injectable({
   providedIn: "root",

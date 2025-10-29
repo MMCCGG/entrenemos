@@ -2,15 +2,7 @@ import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { API_BASE_URL } from "./api.config";
-
-export interface Entrenamiento {
-  id?: number;
-  nombre: string;
-  descripcion: string;
-  fechaInicio: string; // ISO date string
-  fechaFin: string; // ISO date string
-  ejerciciosIds: number[];
-}
+import { Entrenamiento } from "../models/entrenamiento.model";
 
 @Injectable({
   providedIn: "root",
