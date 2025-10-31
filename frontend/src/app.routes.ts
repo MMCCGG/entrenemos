@@ -21,7 +21,7 @@ export const routes: Routes = [
       import("./pages/comunidad/comunidad").then((m) => m.Comunidad),
   },
   {
-    path: "programas",
+    path: "rutina",
     loadComponent: () =>
       import("./pages/programas/programas").then((m) => m.Programas),
   },
