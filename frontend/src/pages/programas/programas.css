@@ -10,3 +10,203 @@
   padding: 40px 20px;
   padding-bottom: 100px;
 }
+
+.page-container h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+/* Selector de vista */
+.vista-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  justify-content: center;
+}
+
+.vista-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #000;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.2s;
+  max-width: 150px;
+}
+
+.vista-btn:hover {
+  background: #000;
+  color: #fff;
+}
+
+.vista-btn.activo {
+  background: #000;
+  color: #fff;
+}
+
+/* Estados */
+.estado-carga {
+  text-align: center;
+  padding: 24px;
+  font-size: 16px;
+}
+
+.error-message {
+  background: #fee;
+  border: 2px solid #f44;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  text-align: center;
+  color: #c00;
+}
+
+/* Contenedor de rutina */
+.rutina-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sin-rutina {
+  text-align: center;
+  padding: 32px 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  color: #666;
+}
+
+/* Cards de entrenamiento */
+.entrenamiento-card {
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.entrenamiento-header {
+  margin-bottom: 16px;
+}
+
+.entrenamiento-nombre {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+}
+
+.entrenamiento-fechas {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+
+.fecha-label {
+  font-weight: 600;
+  color: #666;
+}
+
+.fecha-valor {
+  font-weight: 700;
+  color: #000;
+}
+
+.entrenamiento-descripcion {
+  margin: 16px 0;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Sección de ejercicios */
+.ejercicios-container {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.ejercicios-titulo {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+.sin-ejercicios {
+  text-align: center;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  color: #888;
+  font-size: 14px;
+}
+
+.ejercicio-item {
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.ejercicio-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ejercicio-nombre {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.ejercicio-tipo {
+  margin: 0;
+}
+
+.tipo-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #000;
+  color: #fff;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.ejercicio-descripcion {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555;
+}
+
+.ejercicio-video {
+  margin-top: 8px;
+}
+
+.video-link {
+  display: inline-block;
+  padding: 8px 16px;
+  background: #4caf50;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.video-link:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+}
