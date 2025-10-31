@@ -1,8 +1,102 @@
 <div class="page-wrapper">
     <app-header />
     <div class="page-container">
-        <h1>🚜 Programas</h1>
-        <p>Explora todos los planes de entrenamiento disponibles</p>
+        <h1>💪 Mi Rutina</h1>
+
+        <!-- Selector de vista -->
+        <div class="vista-selector">
+            <button class="vista-btn" [class.activo]="vistaSeleccionada === 'diaria'" (click)="cambiarVista('diaria')">
+                📅 Diaria
+            </button>
+            <button class="vista-btn" [class.activo]="vistaSeleccionada === 'semanal'"
+                (click)="cambiarVista('semanal')">
+                📆 Semanal
+            </button>
+        </div>
+
+        <!-- Estado de carga -->
+        @if (cargando) {
+        <div class="estado-carga">
+            <p>⏳ Cargando rutina...</p>
+        </div>
+        }
+
+        <!-- Mensaje de error -->
+        @if (error && !cargando) {
+        <div class="error-message">
+            <p>❌ {{ error }}</p>
+        </div>
+        }
+
+        <!-- Lista de entrenamientos -->
+        @if (!cargando && !error) {
+        <div class="rutina-container">
+            @if (entrenamientos.length === 0) {
+            <div class="sin-rutina">
+                <p>📭 No hay entrenamientos programados para {{ vistaSeleccionada === 'diaria' ? 'hoy' : 'esta semana'
+                    }}</p>
+            </div>
+            }
+
+            @for (entrenamiento of entrenamientos; track entrenamiento.id) {
+            <div class="entrenamiento-card">
+                <div class="entrenamiento-header">
+                    <h2 class="entrenamiento-nombre">{{ entrenamiento.nombre }}</h2>
+                    <div class="entrenamiento-fechas">
+                        <span class="fecha-label">Desde:</span>
+                        <span class="fecha-valor">{{ formatearFecha(entrenamiento.fechaInicio) }}</span>
+                        <span class="fecha-label">Hasta:</span>
+                        <span class="fecha-valor">{{ formatearFecha(entrenamiento.fechaFin) }}</span>
+                    </div>
+                </div>
+
+                @if (entrenamiento.descripcion) {
+                <p class="entrenamiento-descripcion">
+                    {{ entrenamiento.descripcion }}
+                </p>
+                }
+
+                <!-- Lista de ejercicios -->
+                <div class="ejercicios-container">
+                    <h3 class="ejercicios-titulo">
+                        🏋️ Ejercicios ({{ entrenamiento.ejercicios.length }})
+                    </h3>
+
+                    @if (entrenamiento.ejercicios.length === 0) {
+                    <div class="sin-ejercicios">
+                        <p>No hay ejercicios asignados</p>
+                    </div>
+                    }
+
+                    @for (ejercicio of entrenamiento.ejercicios; track ejercicio.id) {
+                    <div class="ejercicio-item">
+                        <div class="ejercicio-info">
+                            <h4 class="ejercicio-nombre">{{ ejercicio.nombre }}</h4>
+                            @if (ejercicio.tipo) {
+                            <p class="ejercicio-tipo">
+                                <span class="tipo-badge">{{ ejercicio.tipo }}</span>
+                            </p>
+                            }
+                            @if (ejercicio.descripcion) {
+                            <p class="ejercicio-descripcion">
+                                {{ ejercicio.descripcion }}
+                            </p>
+                            }
+                            @if (ejercicio.videoUrl) {
+                            <div class="ejercicio-video">
+                                <a [href]="ejercicio.videoUrl" target="_blank" class="video-link">
+                                    ▶️ Ver video del ejercicio
+                                </a>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+        }
     </div>
     <app-bottom-nav />
 </div>
