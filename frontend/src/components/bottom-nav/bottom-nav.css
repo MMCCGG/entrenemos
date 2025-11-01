@@ -34,6 +34,7 @@
 
 .nav-item:hover {
   opacity: 1;
+  
 }
 
 .nav-item.active {
@@ -71,6 +72,10 @@
   margin-bottom: 4px;
 }
 
+.circle-button:hover {
+  background: lightgray;
+  border: 3px solid indigo;
+}
 .nav-item.active .circle-button {
   background: indigo;
   border: 3px solid indigo;
