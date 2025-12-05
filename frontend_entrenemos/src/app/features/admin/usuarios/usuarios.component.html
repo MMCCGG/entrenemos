@@ -1,0 +1,90 @@
+<div class="usuarios-admin-container">
+  <div class="header-section">
+    <h1>👥 Gestión de Usuarios</h1>
+    <button class="btn-nuevo" (click)="crear()">
+      ➕ Nuevo Usuario
+    </button>
+  </div>
+
+  <!-- Mensaje de error -->
+  @if (error) {
+  <div class="error-message">
+    <p>❌ {{ error }}</p>
+    <button class="btn-reintentar" (click)="cargarUsuarios()">
+      🔄 Reintentar
+    </button>
+  </div>
+  }
+
+  <!-- Estado de carga -->
+  @if (cargando) {
+  <div class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando usuarios...</p>
+  </div>
+  }
+
+  <!-- Lista de usuarios -->
+  @if (!cargando && !error) {
+  <div class="usuarios-table-container">
+    @if (usuarios.length === 0) {
+    <div class="sin-usuarios">
+      <p>📭 No hay usuarios registrados</p>
+      <button class="btn-nuevo" (click)="crear()">
+        Crear el primero
+      </button>
+    </div>
+    } @else {
+    <table class="usuarios-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Teléfono</th>
+          <th>Fecha Registro</th>
+          <th>Rol</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of usuarios; track u.id) {
+        <tr>
+          <td>{{ u.id }}</td>
+          <td>{{ u.nombre }}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.telefono || "-" }}</td>
+          <td>
+            @if (u.fechaRegistro) {
+            {{ u.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}
+            } @else {
+            -
+            }
+          </td>
+          <td>
+            @if (u.rol) {
+            <span class="rol-badge" [class]="u.rol.toLowerCase()">
+              {{ u.rol }}
+            </span>
+            } @else {
+            <span>-</span>
+            }
+          </td>
+          <td>
+            <div class="acciones">
+              <button class="btn-editar" (click)="editar(u)">
+                ✏️ Editar
+              </button>
+              <button class="btn-eliminar" (click)="eliminar(u.id!)">
+                🗑️ Eliminar
+              </button>
+            </div>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    }
+  </div>
+  }
+</div>

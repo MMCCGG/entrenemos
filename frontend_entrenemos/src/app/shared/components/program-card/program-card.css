@@ -1,0 +1,111 @@
+.program-card {
+  background: white;
+  border: none;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.program-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s;
+}
+
+.program-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);
+}
+
+.program-card:hover::before {
+  transform: scaleX(1);
+}
+
+.program-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.program-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.program-details {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.program-image {
+  width: 100px;
+  height: 100px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 16px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.program-card:hover .program-image {
+  transform: scale(1.05);
+}
+
+.program-image::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.1) 0%,
+    rgba(118, 75, 162, 0.1) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.program-card:hover .program-image::after {
+  opacity: 1;
+}
+
+.program-image.trx {
+  background-image: url("/assets/trx-image.jpg");
+}
+
+.program-image.builder {
+  background-image: url("/assets/bb-image.jpg");
+}
+
+.program-image.basic {
+  background-image: url("/assets/bf-image.jpg");
+}

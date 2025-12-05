@@ -1,0 +1,108 @@
+<div class="app-container">
+    <app-header />
+
+    <main class="main-content">
+        <!-- Sección de bienvenida -->
+        <section class="welcome-section">
+            @if (usuario) {
+            <div class="welcome-content">
+                <h1 class="welcome-title">{{ saludoPersonalizado }}, {{ usuario.nombre }}!</h1>
+                <p class="welcome-subtitle">Continúa tu progreso hoy</p>
+            </div>
+            <app-user-profile [usuario]="usuario" />
+            } @else {
+            <div class="welcome-content">
+                <h1 class="welcome-title">¡Bienvenido a Entrenemos!</h1>
+                <p class="welcome-subtitle">Inicia tu viaje fitness hoy</p>
+            </div>
+            <app-user-profile />
+            }
+        </section>
+
+        <!-- Estadísticas rápidas -->
+        @if (usuario && !loading) {
+        <section class="stats-section">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <p class="stat-value">{{ totalProgresos }}</p>
+                    <p class="stat-label">Sesiones</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-content">
+                    <p class="stat-value">{{ programasCompletados }}</p>
+                    <p class="stat-label">Completados</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💪</div>
+                <div class="stat-content">
+                    <p class="stat-value">{{ totalProgramas }}</p>
+                    <p class="stat-label">Programas</p>
+                </div>
+            </div>
+        </section>
+        }
+
+        <!-- Programas destacados -->
+        <section class="featured-programs">
+            <div class="section-header">
+                <h2 class="section-title">Programas destacados</h2>
+                @if (programas.length > 3) {
+                <button class="see-all-button" (click)="router.navigate(['/rutina'])">
+                    Ver todos
+                </button>
+                }
+            </div>
+
+            @if (loading) {
+            <div class="loading-container">
+                <div class="spinner"></div>
+                <p>Cargando programas...</p>
+            </div>
+            } @else if (error) {
+            <div class="error-container">
+                <p>{{ error }}</p>
+                <button (click)="cargarDatos()" class="retry-button">Reintentar</button>
+            </div>
+            } @else if (programas.length === 0) {
+            <div class="empty-container">
+                <p>No hay programas disponibles</p>
+            </div>
+            } @else {
+            <div class="programs-container">
+                @for (programa of programasDestacados; track programa.id) {
+                <div class="program-wrapper" (click)="verDetallePrograma(programa)">
+                    <app-program-card [entrenamiento]="programa" />
+                </div>
+                }
+            </div>
+            }
+        </section>
+
+        <!-- Acciones rápidas -->
+        @if (!loading) {
+        <section class="quick-actions">
+            <h2 class="section-title">Acciones rápidas</h2>
+            <div class="actions-grid">
+                <button class="action-card" (click)="router.navigate(['/progreso'])">
+                    <span class="action-icon">📈</span>
+                    <span class="action-text">Ver Progreso</span>
+                </button>
+                <button class="action-card" (click)="router.navigate(['/rutina'])">
+                    <span class="action-icon">🏋️</span>
+                    <span class="action-text">Mis Rutinas</span>
+                </button>
+                <button class="action-card" (click)="router.navigate(['/comunidad'])">
+                    <span class="action-icon">👥</span>
+                    <span class="action-text">Comunidad</span>
+                </button>
+            </div>
+        </section>
+        }
+    </main>
+
+    <app-bottom-nav />
+</div>

@@ -1,0 +1,87 @@
+<div class="page-wrapper">
+    <app-header />
+
+    <div class="page-container">
+        @if (loading) {
+        <div class="loading-container">
+            <p>Cargando programa...</p>
+        </div>
+        } @else if (error) {
+        <div class="error-container">
+            <p>{{ error }}</p>
+            <button (click)="volver()" class="back-button">Volver</button>
+        </div>
+        } @else if (programa) {
+        <div class="programa-detalle">
+            <button (click)="volver()" class="back-button">← Volver</button>
+
+            <div class="programa-header">
+                <h1 class="programa-titulo">{{ programa.nombre }}</h1>
+                @if (programa.descripcion) {
+                <p class="programa-descripcion">{{ programa.descripcion }}</p>
+                }
+            </div>
+
+            <div class="programa-info">
+                @if (programa.fechaInicio || programa.fechaFin) {
+                <div class="info-item">
+                    <span class="info-label">Período:</span>
+                    <span class="info-value">
+                        {{ formatearFecha(programa.fechaInicio) }} -
+                        {{ formatearFecha(programa.fechaFin) }}
+                    </span>
+                </div>
+                }
+                @if (programa.ejercicios && programa.ejercicios.length > 0) {
+                <div class="info-item">
+                    <span class="info-label">Ejercicios:</span>
+                    <span class="info-value">{{ programa.ejercicios.length }}</span>
+                </div>
+                }
+            </div>
+
+            @if (programa.ejercicios && programa.ejercicios.length > 0) {
+            <div class="ejercicios-section">
+                <h2 class="section-title">Ejercicios del programa</h2>
+                <div class="ejercicios-list">
+                    @for (ejercicio of programa.ejercicios; track ejercicio.id) {
+                    <div class="ejercicio-card">
+                        <h3 class="ejercicio-nombre">{{ ejercicio.nombre }}</h3>
+                        @if (ejercicio.descripcion) {
+                        <p class="ejercicio-descripcion">{{ ejercicio.descripcion }}</p>
+                        }
+                        <div class="ejercicio-detalles">
+                            @if (ejercicio.repeticiones) {
+                            <span class="detalle-badge">Reps: {{ ejercicio.repeticiones }}</span>
+                            }
+                            @if (ejercicio.peso) {
+                            <span class="detalle-badge">Peso: {{ ejercicio.peso }}kg</span>
+                            }
+                            @if (ejercicio.tipo) {
+                            <span class="detalle-badge">{{ ejercicio.tipo }}</span>
+                            }
+                        </div>
+                        @if (ejercicio.videoUrl) {
+                        <a [href]="ejercicio.videoUrl" target="_blank" class="video-link">
+                            Ver video →
+                        </a>
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+            } @else {
+            <div class="empty-ejercicios">
+                <p>Este programa no tiene ejercicios asignados aún.</p>
+            </div>
+            }
+
+            <div class="action-buttons">
+                <button class="primary-button">Comenzar entrenamiento</button>
+            </div>
+        </div>
+        }
+    </div>
+
+    <app-bottom-nav />
+</div>

@@ -1,0 +1,15 @@
+<section class="user-profile">
+    <div class="profile-avatar">
+        <div class="avatar-wrapper">
+            <img src="/assets/user-avatar.png" alt="Perfil de usuario" />
+            <div class="status-indicator"></div>
+        </div>
+    </div>
+    <div class="profile-info">
+        <h2 class="user-name">{{ nombreUsuario }}</h2>
+        <p class="user-details">{{ detallesUsuario }}</p>
+        @if (usuario && usuario.rol) {
+        <span class="user-badge">{{ usuario.rol }}</span>
+        }
+    </div>
+</section>

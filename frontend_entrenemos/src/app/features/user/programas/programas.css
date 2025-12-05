@@ -1,0 +1,454 @@
+.page-wrapper {
+  max-width: 414px;
+  margin: 0 auto;
+  background: linear-gradient(180deg, #f5f7fa 0%, #e8ecf1 100%);
+  min-height: 100vh;
+}
+
+.page-container {
+  color: #1a1a1a;
+  padding: 20px 16px;
+  padding-bottom: 100px;
+}
+
+.page-container h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Selector de vista */
+.vista-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  background: white;
+  padding: 4px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.vista-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  color: #666;
+}
+
+.vista-btn:hover {
+  background: #f5f7fa;
+  color: #667eea;
+}
+
+.vista-btn.activo {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Estados */
+.estado-carga {
+  text-align: center;
+  padding: 40px 24px;
+  font-size: 16px;
+  color: #666;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e8ecf1;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-message {
+  background: #fee;
+  border: 2px solid #f44;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+  text-align: center;
+  color: #c00;
+}
+
+/* Planes Disponibles */
+.planes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sin-planes {
+  text-align: center;
+  padding: 60px 32px;
+  background: white;
+  border-radius: 20px;
+  color: #666;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.plan-card {
+  background: white;
+  border: none;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s;
+}
+
+.plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+}
+
+.plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.plan-nombre {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  flex: 1;
+  color: #1a1a1a;
+}
+
+.dificultad-badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.dificultad-badge.principiante {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.dificultad-badge.intermedio {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.dificultad-badge.avanzado {
+  background: #fce4ec;
+  color: #c2185b;
+}
+
+.plan-descripcion {
+  margin: 12px 0 16px 0;
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #666;
+}
+
+.plan-info {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 12px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.info-icon {
+  font-size: 18px;
+}
+
+.info-text {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.btn-seleccionar {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  font-family: "Stardos Stencil", sans-serif;
+}
+
+.btn-seleccionar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.btn-seleccionar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mi Plan */
+.mi-plan-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sin-plan {
+  text-align: center;
+  padding: 60px 32px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.sin-plan-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.sin-plan h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: #1a1a1a;
+}
+
+.sin-plan p {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+}
+
+.btn-ver-disponibles {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  font-family: "Stardos Stencil", sans-serif;
+}
+
+.btn-ver-disponibles:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.plan-activo-card {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.plan-activo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.plan-activo-nombre {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  flex: 1;
+  color: #1a1a1a;
+}
+
+.plan-activo-badge {
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.plan-activo-descripcion {
+  margin: 0 0 20px 0;
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #666;
+}
+
+/* Progreso */
+.progreso-section {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f5f7fa;
+  border-radius: 12px;
+}
+
+.progreso-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.progreso-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+}
+
+.progreso-porcentaje {
+  font-size: 18px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.progreso-bar {
+  width: 100%;
+  height: 12px;
+  background: #e8ecf1;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progreso-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+/* Estadísticas */
+.estadisticas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.estadistica-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background: #f5f7fa;
+  border-radius: 12px;
+  gap: 8px;
+}
+
+.estadistica-icon {
+  font-size: 24px;
+}
+
+.estadistica-valor {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.estadistica-label {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+/* Fechas */
+.fechas-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 12px;
+}
+
+.fecha-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fecha-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+}
+
+.fecha-valor {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+/* Acciones */
+.acciones-plan {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-ver-plan {
+  flex: 1;
+  padding: 14px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  font-family: "Stardos Stencil", sans-serif;
+}
+
+.btn-ver-plan:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}

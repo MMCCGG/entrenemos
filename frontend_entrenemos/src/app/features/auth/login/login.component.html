@@ -1,0 +1,18 @@
+<div class="video-background">
+  <video autoplay muted loop playsinline>
+    <source src="assets/videos/login.webm" type="video/webm">
+    <source src="assets/videos/login.mp4" type="video/mp4">
+  </video>
+</div>
+
+<div class="login-container">
+  <h2>Iniciar sesión</h2>
+
+  <form (ngSubmit)="onLogin()">
+    <input type="email" placeholder="Email" [(ngModel)]="email" name="email" required>
+    <input type="password" placeholder="Contraseña" [(ngModel)]="password" name="password" required>
+    <button type="submit">Entrar</button>
+  </form>
+
+  <p *ngIf="error" class="error">{{error}}</p>
+</div>

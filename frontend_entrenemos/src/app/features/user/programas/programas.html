@@ -1,0 +1,171 @@
+<div class="page-wrapper">
+    <app-header />
+    <div class="page-container">
+        <h1>💪 Planes de Entrenamiento</h1>
+
+        <!-- Selector de vista -->
+        <div class="vista-selector">
+            <button class="vista-btn" [class.activo]="vistaSeleccionada === 'disponibles'"
+                (click)="cambiarVista('disponibles')">
+                📋 Disponibles
+            </button>
+            <button class="vista-btn" [class.activo]="vistaSeleccionada === 'mi-plan'"
+                (click)="cambiarVista('mi-plan')">
+                🎯 Mi Plan
+            </button>
+        </div>
+
+        <!-- Estado de carga -->
+        @if (cargando) {
+        <div class="estado-carga">
+            <div class="spinner"></div>
+            <p>⏳ Cargando...</p>
+        </div>
+        }
+
+        <!-- Mensaje de error -->
+        @if (error && !cargando) {
+        <div class="error-message">
+            <p>❌ {{ error }}</p>
+        </div>
+        }
+
+        <!-- Vista: Planes Disponibles -->
+        @if (!cargando && !error && vistaSeleccionada === 'disponibles') {
+        <div class="planes-container">
+            @if (planesDisponibles.length === 0) {
+            <div class="sin-planes">
+                <p>📭 No hay planes disponibles en este momento</p>
+            </div>
+            }
+
+            @for (plan of planesDisponibles; track plan.entrenamiento.id) {
+            <div class="plan-card">
+                <div class="plan-header">
+                    <h2 class="plan-nombre">{{ plan.entrenamiento.nombre }}</h2>
+                    @if (plan.dificultad) {
+                    <span class="dificultad-badge" [class]="plan.dificultad.toLowerCase()">
+                        {{ plan.dificultad }}
+                    </span>
+                    }
+                </div>
+
+                @if (plan.entrenamiento.descripcion) {
+                <p class="plan-descripcion">{{ plan.entrenamiento.descripcion }}</p>
+                }
+
+                <div class="plan-info">
+                    <div class="info-item">
+                        <span class="info-icon">📅</span>
+                        <span class="info-text">{{ plan.duracionDias }} días</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">🏋️</span>
+                        <span class="info-text">
+                            {{ plan.entrenamiento.ejercicios?.length || plan.entrenamiento.ejerciciosIds?.length || 0 }}
+                            ejercicios
+                        </span>
+                    </div>
+                </div>
+
+                <button class="btn-seleccionar" (click)="seleccionarPlan(plan)" [disabled]="asignando">
+                    @if (asignando) {
+                    <span>⏳ Asignando...</span>
+                    } @else {
+                    <span>✅ Seleccionar Plan</span>
+                    }
+                </button>
+            </div>
+            }
+        </div>
+        }
+
+        <!-- Vista: Mi Plan Activo -->
+        @if (!cargando && vistaSeleccionada === 'mi-plan') {
+        <div class="mi-plan-container">
+            @if (!planActivo) {
+            <div class="sin-plan">
+                <div class="sin-plan-icon">🎯</div>
+                <h2>No tienes un plan activo</h2>
+                <p>Selecciona un plan de entrenamiento para comenzar tu viaje fitness</p>
+                <button class="btn-ver-disponibles" (click)="cambiarVista('disponibles')">
+                    Ver Planes Disponibles
+                </button>
+            </div>
+            } @else {
+            <div class="plan-activo-card">
+                <div class="plan-activo-header">
+                    <h2 class="plan-activo-nombre">{{ planActivo.entrenamiento?.nombre }}</h2>
+                    <span class="plan-activo-badge">Activo</span>
+                </div>
+
+                @if (planActivo.entrenamiento && planActivo.entrenamiento.descripcion) {
+                <p class="plan-activo-descripcion">{{ planActivo.entrenamiento.descripcion }}</p>
+                }
+
+                <!-- Progreso -->
+                <div class="progreso-section">
+                    <div class="progreso-header">
+                        <span class="progreso-label">Progreso</span>
+                        <span class="progreso-porcentaje">{{ obtenerProgresoPlan() }}%</span>
+                    </div>
+                    <div class="progreso-bar">
+                        <div class="progreso-fill" [style.width.%]="obtenerProgresoPlan()"></div>
+                    </div>
+                </div>
+
+                <!-- Estadísticas -->
+                <div class="estadisticas-grid">
+                    <div class="estadistica-item">
+                        <span class="estadistica-icon">✅</span>
+                        <span class="estadistica-valor">
+                            {{ planActivo.ejerciciosCompletados?.length || 0 }}
+                        </span>
+                        <span class="estadistica-label">Completados</span>
+                    </div>
+                    <div class="estadistica-item">
+                        <span class="estadistica-icon">🏋️</span>
+                        <span class="estadistica-valor">
+                            @if (planActivo.entrenamiento) {
+                            {{ (planActivo.entrenamiento.ejercicios?.length) ??
+                            (planActivo.entrenamiento.ejerciciosIds?.length) ?? 0 }}
+                            } @else {
+                            0
+                            }
+                        </span>
+                        <span class="estadistica-label">Total</span>
+                    </div>
+                    <div class="estadistica-item">
+                        <span class="estadistica-icon">📅</span>
+                        <span class="estadistica-valor">{{ calcularDiasRestantes() }}</span>
+                        <span class="estadistica-label">Días restantes</span>
+                    </div>
+                </div>
+
+                <!-- Fechas -->
+                <div class="fechas-section">
+                    <div class="fecha-item">
+                        <span class="fecha-label">Inicio:</span>
+                        <span class="fecha-valor">{{ formatearFecha(planActivo.fechaInicio) }}</span>
+                    </div>
+                    @if (planActivo.fechaFin) {
+                    <div class="fecha-item">
+                        <span class="fecha-label">Fin:</span>
+                        <span class="fecha-valor">{{ formatearFecha(planActivo.fechaFin) }}</span>
+                    </div>
+                    }
+                </div>
+
+                <!-- Acciones -->
+                <div class="acciones-plan">
+                    <button class="btn-ver-plan" (click)="verPlanActivo()">
+                        🏋️ Ver Entrenamiento
+                    </button>
+                </div>
+            </div>
+            }
+        </div>
+        }
+    </div>
+    <app-bottom-nav />
+</div>

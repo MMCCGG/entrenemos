@@ -1,0 +1,310 @@
+<div class="programas-admin-container">
+    <!-- Sección de Programas -->
+    <div class="programas-section">
+        <div class="header-section">
+            <h1>💪 Gestión de Programas de Entrenamiento</h1>
+            <button class="btn-nuevo" (click)="abrirFormulario()">
+                ➕ Nuevo Programa
+            </button>
+        </div>
+
+        <!-- Mensaje de error -->
+        @if (error) {
+        <div class="error-message">
+            <p>❌ {{ error }}</p>
+        </div>
+        }
+
+        <!-- Estado de carga -->
+        @if (cargando && entrenamientos.length === 0) {
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p>Cargando programas...</p>
+        </div>
+        }
+
+        <!-- Lista de entrenamientos -->
+        @if (!cargando || entrenamientos.length > 0) {
+        <div class="entrenamientos-grid">
+            @for (entrenamiento of entrenamientos; track entrenamiento.id) {
+            <div class="entrenamiento-card">
+                <div class="card-header">
+                    <h3 class="entrenamiento-nombre">{{ entrenamiento.nombre }}</h3>
+                    <div class="card-actions">
+                        <button class="btn-editar" (click)="abrirFormulario(entrenamiento)">
+                            ✏️
+                        </button>
+                        <button class="btn-eliminar" (click)="eliminar(entrenamiento.id!)">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+
+                @if (entrenamiento.descripcion) {
+                <p class="entrenamiento-descripcion">{{ entrenamiento.descripcion }}</p>
+                }
+
+                <div class="entrenamiento-info">
+                    <div class="info-item">
+                        <span class="info-label">📅 Inicio:</span>
+                        <span class="info-value">{{ formatearFecha(entrenamiento.fechaInicio) }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📅 Fin:</span>
+                        <span class="info-value">{{ formatearFecha(entrenamiento.fechaFin) }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🏋️ Ejercicios:</span>
+                        <span class="info-value">
+                            {{ entrenamiento.ejerciciosIds?.length || entrenamiento.ejercicios?.length || 0 }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            }
+
+            @if (entrenamientos.length === 0) {
+            <div class="sin-entrenamientos">
+                <p>📭 No hay programas de entrenamiento creados</p>
+                <button class="btn-nuevo" (click)="abrirFormulario()">
+                    Crear el primero
+                </button>
+            </div>
+            }
+        </div>
+        }
+
+        <!-- Modal de formulario -->
+        @if (mostrarFormulario) {
+        <div class="modal-overlay" (click)="cerrarFormulario()">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <h2>{{ editando ? "✏️ Editar Programa" : "➕ Nuevo Programa" }}</h2>
+                    <button class="btn-cerrar" (click)="cerrarFormulario()">✕</button>
+                </div>
+
+                <form class="formulario" (ngSubmit)="guardar()">
+                    <div class="form-group">
+                        <label for="nombre">Nombre del Programa *</label>
+                        <input type="text" id="nombre" [(ngModel)]="entrenamientoForm.nombre" name="nombre" required
+                            placeholder="Ej: Plan de Fuerza 4 Semanas" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descripcion">Descripción</label>
+                        <textarea id="descripcion" [(ngModel)]="entrenamientoForm.descripcion" name="descripcion"
+                            rows="3" placeholder="Describe el programa de entrenamiento..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fechaInicio">Fecha de Inicio</label>
+                            <input type="date" id="fechaInicio" [(ngModel)]="entrenamientoForm.fechaInicio"
+                                name="fechaInicio" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fechaFin">Fecha de Fin</label>
+                            <input type="date" id="fechaFin" [(ngModel)]="entrenamientoForm.fechaFin" name="fechaFin" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ejercicios del Programa</label>
+                        <div class="ejercicios-list">
+                            @if (ejercicios.length === 0) {
+                            <p class="sin-ejercicios">No hay ejercicios disponibles. Crea ejercicios primero.</p>
+                            } @else {
+                            @for (ejercicio of ejercicios; track ejercicio.id) {
+                            <label class="ejercicio-checkbox">
+                                <input type="checkbox" [checked]="estaSeleccionado(ejercicio.id!)"
+                                    (change)="toggleEjercicio(ejercicio.id!)" />
+                                <span class="ejercicio-info">
+                                    <span class="ejercicio-nombre">{{ ejercicio.nombre }}</span>
+                                    @if (ejercicio.tipo) {
+                                    <span class="ejercicio-tipo">{{ ejercicio.tipo }}</span>
+                                    }
+                                </span>
+                            </label>
+                            }
+                            }
+                        </div>
+                        <p class="ejercicios-seleccionados">
+                            {{ ejerciciosSeleccionados.length }} ejercicio(s) seleccionado(s)
+                        </p>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancelar" (click)="cerrarFormulario()">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn-guardar" [disabled]="cargando">
+                            @if (cargando) {
+                            <span>⏳ Guardando...</span>
+                            } @else {
+                            <span>{{ editando ? "💾 Actualizar" : "✅ Crear" }}</span>
+                            }
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        }
+
+        <!-- Modal de formulario de ejercicio -->
+        @if (mostrarFormularioEjercicio) {
+        <div class="modal-overlay" (click)="cerrarFormularioEjercicio()">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <h2>{{ editandoEjercicio ? "✏️ Editar Ejercicio" : "➕ Nuevo Ejercicio" }}</h2>
+                    <button class="btn-cerrar" (click)="cerrarFormularioEjercicio()">✕</button>
+                </div>
+
+                <form class="formulario" (ngSubmit)="guardarEjercicio()">
+                    <div class="form-group">
+                        <label for="ejercicio-nombre">Nombre del Ejercicio *</label>
+                        <input type="text" id="ejercicio-nombre" [(ngModel)]="ejercicioForm.nombre"
+                            name="ejercicio-nombre" required placeholder="Ej: Press de Banca" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ejercicio-descripcion">Descripción</label>
+                        <textarea id="ejercicio-descripcion" [(ngModel)]="ejercicioForm.descripcion"
+                            name="ejercicio-descripcion" rows="3" placeholder="Describe el ejercicio..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ejercicio-tipo">Tipo</label>
+                            <input type="text" id="ejercicio-tipo" [(ngModel)]="ejercicioForm.tipo"
+                                name="ejercicio-tipo" placeholder="Ej: Fuerza, Cardio, Flexibilidad" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ejercicio-repeticiones">Repeticiones</label>
+                            <input type="number" id="ejercicio-repeticiones" [(ngModel)]="ejercicioForm.repeticiones"
+                                name="ejercicio-repeticiones" min="0" placeholder="Ej: 10" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ejercicio-peso">Peso (kg)</label>
+                            <input type="number" id="ejercicio-peso" [(ngModel)]="ejercicioForm.peso"
+                                name="ejercicio-peso" min="0" step="0.1" placeholder="Ej: 20.5" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ejercicio-videoUrl">URL del Video</label>
+                            <input type="url" id="ejercicio-videoUrl" [(ngModel)]="ejercicioForm.videoUrl"
+                                name="ejercicio-videoUrl" placeholder="https://..." />
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancelar" (click)="cerrarFormularioEjercicio()">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn-guardar" [disabled]="cargando">
+                            @if (cargando) {
+                            <span>⏳ Guardando...</span>
+                            } @else {
+                            <span>{{ editandoEjercicio ? "💾 Actualizar" : "✅ Crear" }}</span>
+                            }
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        }
+    </div>
+
+    <!-- Sección de Ejercicios -->
+    <div class="ejercicios-section">
+        <div class="header-section">
+            <h2>🏋️ Gestión de Ejercicios</h2>
+            <button class="btn-nuevo" (click)="abrirFormularioEjercicio()">
+                ➕ Nuevo Ejercicio
+            </button>
+        </div>
+
+        <!-- Tabla de ejercicios -->
+        @if (ejercicios.length === 0) {
+        <div class="sin-ejercicios-card">
+            <p>📭 No hay ejercicios creados</p>
+            <button class="btn-nuevo" (click)="abrirFormularioEjercicio()">
+                Crear el primero
+            </button>
+        </div>
+        } @else {
+        <div class="ejercicios-table-container">
+            <table class="ejercicios-table">
+                <thead>
+                    <tr>
+                        <th class="sortable" (click)="ordenarPor('nombre')">
+                            <span>Nombre</span>
+                            <span class="sort-icon">{{ obtenerIconoOrden('nombre') }}</span>
+                        </th>
+                        <th class="sortable" (click)="ordenarPor('tipo')">
+                            <span>Tipo</span>
+                            <span class="sort-icon">{{ obtenerIconoOrden('tipo') }}</span>
+                        </th>
+                        <th class="sortable" (click)="ordenarPor('repeticiones')">
+                            <span>Repeticiones</span>
+                            <span class="sort-icon">{{ obtenerIconoOrden('repeticiones') }}</span>
+                        </th>
+                        <th class="sortable" (click)="ordenarPor('peso')">
+                            <span>Peso (kg)</span>
+                            <span class="sort-icon">{{ obtenerIconoOrden('peso') }}</span>
+                        </th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (ejercicio of ejerciciosOrdenados; track ejercicio.id) {
+                    <tr>
+                        <td class="ejercicio-nombre-cell">
+                            <strong>{{ ejercicio.nombre }}</strong>
+                            @if (ejercicio.descripcion) {
+                            <span class="ejercicio-descripcion-table">{{ ejercicio.descripcion }}</span>
+                            }
+                        </td>
+                        <td>
+                            @if (ejercicio.tipo) {
+                            <span class="ejercicio-tipo-badge">{{ ejercicio.tipo }}</span>
+                            } @else {
+                            <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>
+                            @if (ejercicio.repeticiones) {
+                            {{ ejercicio.repeticiones }}
+                            } @else {
+                            <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>
+                            @if (ejercicio.peso) {
+                            {{ ejercicio.peso }}
+                            } @else {
+                            <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td class="acciones-cell">
+                            <button class="btn-editar-table" (click)="abrirFormularioEjercicio(ejercicio)"
+                                title="Editar">
+                                ✏️
+                            </button>
+                            <button class="btn-eliminar-table" (click)="eliminarEjercicio(ejercicio.id!)"
+                                title="Eliminar">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+
+        <!-- Modal de formulario de ejercicio -->

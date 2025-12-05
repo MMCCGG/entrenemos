@@ -1,0 +1,78 @@
+<div class="page-wrapper">
+    <app-header />
+    <div class="page-container">
+        <h1>📊 Progreso</h1>
+
+        <!-- Cronómetro WOD -->
+        <app-wod-timer />
+
+        <h2 class="seccion-titulo">Registra tus tiempos</h2>
+
+        <!-- Mensaje de éxito -->
+        @if (exito) {
+        <div class="mensaje-exito">
+            <p>✅ ¡Progreso registrado correctamente!</p>
+        </div>
+        }
+
+        <!-- Mensaje de error -->
+        @if (error) {
+        <div class="mensaje-error">
+            <p>❌ {{ error }}</p>
+        </div>
+        }
+
+        <!-- Formulario de registro -->
+        <form class="formulario-progreso" (ngSubmit)="registrarProgreso()">
+            <div class="campo-formulario">
+                <label for="ejercicio">Ejercicio</label>
+                <select id="ejercicio" class="campo-input" [(ngModel)]="ejercicioSeleccionadoId" name="ejercicio"
+                    [disabled]="guardando" required>
+                    <option [value]="null">Selecciona un ejercicio</option>
+                    @for (ejercicio of ejercicios; track ejercicio.id) {
+                    <option [value]="ejercicio.id">
+                        {{ ejercicio.nombre }}
+                    </option>
+                    }
+                </select>
+            </div>
+
+            <div class="campo-formulario">
+                <label for="fecha">Fecha</label>
+                <input type="date" id="fecha" class="campo-input" [(ngModel)]="fecha" name="fecha"
+                    [disabled]="guardando" required />
+            </div>
+
+            <div class="metricas-grid">
+                <div class="campo-formulario">
+                    <label for="peso">Peso (kg)</label>
+                    <input type="number" id="peso" class="campo-input" [(ngModel)]="peso" name="peso" placeholder="0"
+                        step="0.1" min="0" [disabled]="guardando" />
+                </div>
+
+                <div class="campo-formulario">
+                    <label for="repeticiones">Repeticiones</label>
+                    <input type="number" id="repeticiones" class="campo-input" [(ngModel)]="repeticiones"
+                        name="repeticiones" placeholder="0" min="0" [disabled]="guardando" />
+                </div>
+
+                <div class="campo-formulario">
+                    <label for="tiempo">Tiempo (seg)</label>
+                    <input type="number" id="tiempo" class="campo-input" [(ngModel)]="tiempo" name="tiempo"
+                        placeholder="0" step="0.1" min="0" [disabled]="guardando" />
+                </div>
+            </div>
+
+
+            <button type="submit" class="boton-guardar" [disabled]="guardando">
+                @if (!guardando) {
+                <span>💾 Guardar Progreso</span>
+                }
+                @if (guardando) {
+                <span>⏳ Guardando...</span>
+                }
+            </button>
+        </form>
+    </div>
+    <app-bottom-nav />
+</div>

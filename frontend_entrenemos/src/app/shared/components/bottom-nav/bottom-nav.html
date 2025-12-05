@@ -1,0 +1,31 @@
+<nav class="bottom-nav">
+    <!-- Izquierda -->
+    <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" class="nav-item">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Inicio</span>
+    </a>
+
+    <a routerLink="/comunidad" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">👊</span>
+        <span class="nav-label">Comunidad</span>
+    </a>
+
+    <!-- Centro - Funcionalidad principal -->
+    <a routerLink="/rutina" routerLinkActive="active" class="nav-item center-button">
+        <div class="circle-button">
+            <span class="nav-icon center-icon">🏋️</span>
+        </div>
+        <span class="nav-label">Rutina</span>
+    </a>
+
+    <!-- Derecha -->
+    <a routerLink="/progreso" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Progreso</span>
+    </a>
+
+    <a routerLink="/perfil" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Perfil</span>
+    </a>
+</nav>

@@ -1,0 +1,12 @@
+.page-wrapper {
+  max-width: 414px;
+  margin: 0 auto;
+  background: #d3d3d3;
+  min-height: 100vh;
+}
+
+.page-container {
+  color: black;
+  padding: 40px 20px;
+  padding-bottom: 100px;
+}

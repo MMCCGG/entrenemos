@@ -1,0 +1,151 @@
+.page-wrapper {
+  max-width: 414px;
+  margin: 0 auto;
+  background: #d3d3d3;
+  min-height: 100vh;
+}
+
+.page-container {
+  color: black;
+  padding: 40px 20px;
+  padding-bottom: 100px;
+}
+
+.page-container h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+.seccion-titulo {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 32px 0 24px 0;
+  text-align: center;
+  color: #000;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Mensajes */
+.mensaje-exito {
+  background: #e8f5e9;
+  border: 2px solid #4caf50;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  text-align: center;
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.mensaje-error {
+  background: #ffebee;
+  border: 2px solid #e53935;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 20px 0;
+  text-align: center;
+  color: #c62828;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 2px 4px rgba(229, 57, 53, 0.2);
+}
+
+.mensaje-error p {
+  margin: 0;
+}
+
+/* Formulario */
+.formulario-progreso {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.campo-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.campo-formulario label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #000;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+
+.campo-input {
+  padding: 14px 18px;
+  border: 2px solid #000;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 16px;
+  font-family: inherit;
+  transition: all 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+.campo-input:focus {
+  outline: none;
+  border-color: indigo;
+  box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.1);
+}
+
+.campo-input:disabled {
+  background: #e0e0e0;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.campo-input select {
+  cursor: pointer;
+}
+
+/* Grid de métricas */
+.metricas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.metricas-grid .campo-formulario {
+  margin: 0;
+}
+
+.metricas-grid .campo-input {
+  text-align: center;
+}
+
+/* Botón guardar */
+.boton-guardar {
+  padding: 16px 24px;
+  background: indigo;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.boton-guardar:hover:not(:disabled) {
+  background: #4b0082;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(75, 0, 130, 0.3);
+}
+
+.boton-guardar:disabled {
+  background: #999;
+  cursor: not-allowed;
+  opacity: 0.6;
+}

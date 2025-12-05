@@ -1,0 +1,64 @@
+# Frontend - Angular
+frontend_entrenemos/node_modules/
+frontend_entrenemos/dist/
+frontend_entrenemos/.angular/
+frontend_entrenemos/.sass-cache/
+frontend_entrenemos/connect.lock
+frontend_entrenemos/coverage/
+frontend_entrenemos/libpeerconnection.log
+frontend_entrenemos/npm-debug.log
+frontend_entrenemos/testem.log
+frontend_entrenemos/typings/
+frontend_entrenemos/.idea/
+frontend_entrenemos/.vscode/
+frontend_entrenemos/*.log
+
+# Backend - Spring Boot / Maven
+backend_entrenemos/target/
+backend_entrenemos/.classpath
+backend_entrenemos/.project
+backend_entrenemos/.settings/
+backend_entrenemos/.idea/
+backend_entrenemos/*.iml
+backend_entrenemos/*.class
+backend_entrenemos/.mvn/wrapper/maven-wrapper.jar
+backend_entrenemos/.mvn/wrapper/maven-wrapper.properties
+
+# Archivos de entorno
+.env
+.env.local
+.env.*.local
+*.env
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Archivos temporales
+*.tmp
+*.temp
+.cache/
+
+# Base de datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Archivos de sistema
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+

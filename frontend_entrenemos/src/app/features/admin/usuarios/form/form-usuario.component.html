@@ -1,0 +1,21 @@
+<h2>{{ editando ? "Editar usuario" : "Crear usuario" }}</h2>
+
+<form (ngSubmit)="guardar()">
+
+  <label>Nombre:</label>
+  <input type="text" [(ngModel)]="usuario.nombre" name="nombre" required>
+
+  <label>Email:</label>
+  <input type="email" [(ngModel)]="usuario.email" name="email" required>
+
+  <label>Teléfono:</label>
+  <input type="text" [(ngModel)]="usuario.telefono" name="telefono">
+
+  <label>Rol:</label>
+  <input type="text" [(ngModel)]="usuario.rol" name="rol">
+
+  <button type="submit">
+    {{ editando ? "Guardar cambios" : "Crear usuario" }}
+  </button>
+
+</form>

@@ -1,0 +1,22 @@
+<div class="wod-timer-container">
+    <!-- For Time -->
+    <div class="wod-panel">
+        <h3>Cronómetro</h3>
+        <div class="display-tiempo">{{ formatearTiempo(fortimeTiempoTranscurrido) }}</div>
+        <div class="controles">
+            @if (!fortimeEnCurso) {
+            <button class="btn-control btn-start" (click)="iniciarTimer()">
+                ▶️ Iniciar
+            </button>
+            }
+            @if (fortimeEnCurso) {
+            <button class="btn-control btn-pause" (click)="pausarTimer()">
+                ⏸️ Pausar
+            </button>
+            }
+            <button class="btn-control btn-stop" (click)="detenerTimer(); resetearTimer()">
+                ⏹️ Detener
+            </button>
+        </div>
+    </div>
+</div>
