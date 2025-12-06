@@ -72,6 +72,7 @@ public class AuthController {
         dto.setTelefono(usuario.getTelefono());
         dto.setFechaRegistro(usuario.getFechaRegistro());
         dto.setRol(usuario.getRol().getNombre());
+        dto.setFotoPerfil(usuario.getFotoPerfil());
 
         return ResponseEntity.ok(dto);
     }

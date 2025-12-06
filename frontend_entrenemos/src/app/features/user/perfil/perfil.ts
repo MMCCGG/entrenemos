@@ -25,6 +25,10 @@ export class Perfil implements OnInit {
   loading = true;
   error: string | null = null;
 
+  onFotoActualizada(usuario: Usuario): void {
+    this.usuario = usuario;
+  }
+
   // Estadísticas
   totalProgresos = 0;
   totalSesiones = 0;

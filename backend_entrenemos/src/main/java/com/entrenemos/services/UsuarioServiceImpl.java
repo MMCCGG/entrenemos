@@ -34,6 +34,7 @@ public class UsuarioServiceImpl implements UsuarioService{
                     dto.setRol(u.getRol().getNombre());
                     dto.setTelefono(u.getTelefono());
                     dto.setFechaRegistro(u.getFechaRegistro());
+                    dto.setFotoPerfil(u.getFotoPerfil());
                     return dto;
                 }).collect(Collectors.toList());
     }
@@ -70,6 +71,7 @@ public class UsuarioServiceImpl implements UsuarioService{
         dto.setTelefono(usuario.getTelefono());
         dto.setFechaRegistro(usuario.getFechaRegistro());
         dto.setRol(usuario.getRol().getNombre());
+        dto.setFotoPerfil(usuario.getFotoPerfil());
 
         return dto;
     }
@@ -82,6 +84,10 @@ public class UsuarioServiceImpl implements UsuarioService{
         usuario.setNombre(usuarioDto.getNombre());
         usuario.setEmail(usuarioDto.getEmail());
         usuario.setTelefono(usuarioDto.getTelefono());
+        
+        if (usuarioDto.getFotoPerfil() != null) {
+            usuario.setFotoPerfil(usuarioDto.getFotoPerfil());
+        }
 
         if (usuarioDto.getPassword() != null && !usuarioDto.getPassword().isBlank()) {
             usuario.setPassword(usuarioDto.getPassword());

@@ -13,4 +13,5 @@ public class UsuarioDto {
     private String rol; // "ADMIN", "ENTRENADOR", "ATLETA"
     private String telefono;
     private LocalDateTime fechaRegistro;
+    private String fotoPerfil; // URL o ruta de la foto de perfil
 }

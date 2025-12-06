@@ -18,7 +18,7 @@
             <div class="profile-header">
                 <h1 class="page-title">Mi Perfil</h1>
             </div>
-            <app-user-profile [usuario]="usuario" />
+            <app-user-profile [usuario]="usuario" (fotoActualizada)="onFotoActualizada($event)" />
         </section>
 
         <!-- Información detallada -->

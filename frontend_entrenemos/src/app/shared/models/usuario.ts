@@ -6,4 +6,5 @@ export interface Usuario {
   rol: string;
   telefono?: string;
   fechaRegistro?: string;
+  fotoPerfil?: string;
 }

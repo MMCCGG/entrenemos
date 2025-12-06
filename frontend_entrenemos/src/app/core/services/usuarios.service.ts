@@ -30,4 +30,16 @@ export class UsuariosService {
   actualizarUsuario(id: number, usuario: Usuario): Observable<Usuario> {
     return this.http.put<Usuario>(`${this.apiUrl}/${id}`, usuario);
   }
+
+  subirFotoPerfil(
+    id: number,
+    file: File
+  ): Observable<{ usuario: Usuario; fotoPerfil: string }> {
+    const formData = new FormData();
+    formData.append("file", file);
+    return this.http.post<{ usuario: Usuario; fotoPerfil: string }>(
+      `${this.apiUrl}/${id}/foto-perfil`,
+      formData
+    );
+  }
 }

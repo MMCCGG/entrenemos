@@ -32,6 +32,9 @@ public class Usuario {
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
 
+    @Column(name = "foto_perfil", length = 500)
+    private String fotoPerfil; // URL o ruta de la foto de perfil
+
     @ManyToOne
     @JoinColumn(name = "rol_id", nullable = false)
     private Rol rol;

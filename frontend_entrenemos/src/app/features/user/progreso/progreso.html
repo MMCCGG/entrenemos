@@ -9,10 +9,10 @@
         <h2 class="seccion-titulo">Registra tu progreso</h2>
 
         <!-- Información del plan activo -->
-        @if (planActivo && planActivo.entrenamiento) {
+        @if (tienePlanActivo) {
         <div class="plan-activo-info">
             <div class="plan-activo-header">
-                <h3>🎯 Plan Activo: {{ planActivo.entrenamiento.nombre }}</h3>
+                <h3>🎯 Plan Activo: {{ planActivo?.entrenamiento?.nombre || 'Cargando...' }}</h3>
                 <div class="progreso-plan">
                     <span class="progreso-texto">Progreso: {{ obtenerProgresoPlan() }}%</span>
                     <div class="progreso-bar-mini">
@@ -20,11 +20,13 @@
                     </div>
                 </div>
             </div>
-            <div class="plan-activo-acciones">
-                <label class="toggle-label">
-                    <input type="checkbox" [(ngModel)]="mostrarSoloPlanActivo" name="mostrarSoloPlan" />
-                    <span>Mostrar solo ejercicios del plan activo</span>
-                </label>
+        </div>
+        } @else {
+        <div class="sin-plan-info">
+            <div class="sin-plan-mensaje">
+                <span class="sin-plan-icon">🎯</span>
+                <p>No tienes un plan activo. Selecciona un plan para comenzar a registrar tu progreso.</p>
+                <a routerLink="/rutina" class="btn-seleccionar-plan">Seleccionar Plan</a>
             </div>
         </div>
         }
@@ -55,6 +57,7 @@
         <form class="formulario-progreso" (ngSubmit)="registrarProgreso()">
             <div class="campo-formulario">
                 <label for="ejercicio">Ejercicio</label>
+                @if (tienePlanActivo) {
                 <select id="ejercicio" class="campo-input" [(ngModel)]="ejercicioSeleccionadoId" name="ejercicio"
                     [disabled]="guardando || cargando" required>
                     <option [value]="null">Selecciona un ejercicio</option>
@@ -67,7 +70,13 @@
                     </option>
                     }
                 </select>
-                @if (mostrarSoloPlanActivo && ejerciciosDelPlan.length === 0 && planActivo) {
+                } @else {
+                <select id="ejercicio" class="campo-input" disabled>
+                    <option [value]="null">Selecciona plan</option>
+                </select>
+                <p class="ayuda-texto">⚠️ Necesitas tener un plan activo para registrar ejercicios</p>
+                }
+                @if (planActivo && ejerciciosDelPlan.length === 0) {
                 <p class="ayuda-texto">⚠️ El plan activo no tiene ejercicios asignados</p>
                 }
             </div>

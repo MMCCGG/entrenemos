@@ -257,3 +257,48 @@
   font-size: 14px;
   margin: 0;
 }
+
+/* Mensaje sin plan activo */
+.sin-plan-info {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+.sin-plan-mensaje {
+  text-align: center;
+}
+
+.sin-plan-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.sin-plan-mensaje p {
+  margin: 0 0 16px 0;
+  font-size: 15px;
+  line-height: 1.5;
+  opacity: 0.95;
+}
+
+.btn-seleccionar-plan {
+  display: inline-block;
+  padding: 12px 24px;
+  background: white;
+  color: #ff9800;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-seleccionar-plan:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}

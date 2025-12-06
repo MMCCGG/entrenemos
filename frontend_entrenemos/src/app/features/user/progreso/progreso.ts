@@ -1,11 +1,13 @@
 import { Component, OnInit, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { Router, RouterModule } from "@angular/router";
 import { Header } from "../../../shared/components/header/header";
 import { BottomNav } from "../../../shared/components/bottom-nav/bottom-nav";
 import { WodTimerComponent } from "../../../shared/components/wod-timer/wod-timer";
 import { ProgresoService } from "../../../core/services/progreso.service";
 import { EjercicioService } from "../../../core/services/ejercicio.service";
+import { EntrenamientoService } from "../../../core/services/entrenamiento.service";
 import { PlanUsuarioService } from "../../../core/services/plan-usuario.service";
 import { AuthService } from "../../../core/services/auth.service";
 import { UsuariosService } from "../../../core/services/usuarios.service";
@@ -17,16 +19,25 @@ import { forkJoin } from "rxjs";
 
 @Component({
   selector: "app-progreso",
-  imports: [CommonModule, FormsModule, Header, BottomNav, WodTimerComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    Header,
+    BottomNav,
+    WodTimerComponent,
+  ],
   templateUrl: "./progreso.html",
   styleUrl: "./progreso.css",
 })
 export class Progreso implements OnInit {
   private progresoService = inject(ProgresoService);
   private ejercicioService = inject(EjercicioService);
+  private entrenamientoService = inject(EntrenamientoService);
   private planUsuarioService = inject(PlanUsuarioService);
   private authService = inject(AuthService);
   private usuariosService = inject(UsuariosService);
+  router = inject(Router);
 
   // Datos del formulario
   ejercicios: Ejercicio[] = [];
@@ -41,7 +52,6 @@ export class Progreso implements OnInit {
   usuario: Usuario | null = null;
   usuarioId: number | null = null;
   planActivo: PlanUsuario | null = null;
-  mostrarSoloPlanActivo = true; // Filtrar ejercicios del plan activo
 
   // Estados
   guardando = false;
@@ -55,61 +65,123 @@ export class Progreso implements OnInit {
 
   async cargarUsuarioYPlan(): Promise<void> {
     this.cargando = true;
-    const token = this.authService.getToken();
-    if (!token) {
-      this.cargando = false;
-      this.cargarEjercicios();
-      return;
-    }
+    this.error = null;
 
-    try {
-      const { JwtUtil } = await import("../../../shared/utils/jwt.util");
-      const email = JwtUtil.getEmailFromToken(token);
-      if (email) {
-        this.usuariosService.listarUsuarios().subscribe({
-          next: (usuarios: Usuario[]) => {
-            this.usuario =
-              usuarios.find((u: Usuario) => u.email === email) || null;
-            if (this.usuario?.id) {
-              this.usuarioId = this.usuario.id;
-              this.cargarPlanActivo();
-            } else {
-              this.cargarEjercicios();
-            }
-          },
-          error: () => {
-            this.cargando = false;
-            this.cargarEjercicios();
-          },
-        });
-      } else {
-        this.cargarEjercicios();
-      }
-    } catch {
+    await this.cargarUsuario();
+
+    if (this.usuario && this.usuario.id) {
+      this.usuarioId = this.usuario.id;
+      this.cargarPlanActivo();
+    } else {
+      console.warn("Progreso: No se pudo cargar el usuario");
       this.cargando = false;
       this.cargarEjercicios();
     }
   }
 
+  async cargarUsuario(): Promise<void> {
+    const token = this.authService.getToken();
+    if (!token) {
+      console.warn("Progreso: No hay token de autenticación");
+      this.cargando = false;
+      return Promise.resolve();
+    }
+
+    // Intentar primero con getCurrentUser (más eficiente)
+    return new Promise<void>((resolve) => {
+      this.authService.getCurrentUser().subscribe({
+        next: (usuario: Usuario) => {
+          this.usuario = usuario;
+          this.usuarioId = usuario.id || null;
+          console.log("Progreso: Usuario cargado con getCurrentUser:", usuario);
+          resolve();
+        },
+        error: (err) => {
+          console.warn(
+            "Progreso: getCurrentUser falló, intentando método alternativo:",
+            err
+          );
+          // Fallback: usar método anterior con email del token
+          this.cargarUsuarioPorEmail(token).then(resolve);
+        },
+      });
+    });
+  }
+
+  async cargarUsuarioPorEmail(token: string): Promise<void> {
+    try {
+      const { JwtUtil } = await import("../../../shared/utils/jwt.util");
+      const email = JwtUtil.getEmailFromToken(token);
+      if (!email) {
+        console.warn("Progreso: No se pudo extraer el email del token");
+        this.cargando = false;
+        return Promise.resolve();
+      }
+
+      return new Promise<void>((resolve) => {
+        this.usuariosService.listarUsuarios().subscribe({
+          next: (usuarios: Usuario[]) => {
+            this.usuario =
+              usuarios.find((u: Usuario) => u.email === email) || null;
+
+            if (!this.usuario) {
+              console.warn("Progreso: Usuario no encontrado con email:", email);
+              this.error =
+                "No se pudo encontrar tu usuario. Por favor, contacta al administrador.";
+            } else {
+              this.usuarioId = this.usuario.id || null;
+              console.log(
+                "Progreso: Usuario cargado correctamente:",
+                this.usuario
+              );
+            }
+            resolve();
+          },
+          error: (err) => {
+            console.error("Progreso: Error cargando usuarios:", err);
+            this.error = "Error al cargar la información del usuario";
+            resolve();
+          },
+        });
+      });
+    } catch (error) {
+      console.error("Progreso: Error en cargarUsuarioPorEmail:", error);
+      this.cargando = false;
+      return Promise.resolve();
+    }
+  }
+
   cargarPlanActivo(): void {
     if (!this.usuarioId) {
+      console.warn("Progreso: No hay usuarioId para cargar plan");
       this.cargarEjercicios();
       return;
     }
 
-    // Intentar cargar desde el backend
+    console.log(
+      "Progreso: Cargando plan activo para usuarioId:",
+      this.usuarioId
+    );
+
+    // Intentar cargar desde el backend primero
     this.planUsuarioService.obtenerPlanActivo(this.usuarioId).subscribe({
       next: (plan) => {
         if (plan) {
+          console.log("Progreso: Plan cargado desde backend:", plan);
           this.planActivo = plan;
           this.cargarEjerciciosDelPlan();
+          this.cargarEjercicios();
         } else {
+          console.log(
+            "Progreso: No hay plan en backend, intentando localStorage"
+          );
           // Fallback a localStorage
           this.cargarPlanDesdeLocalStorage();
+          this.cargarEjercicios();
         }
-        this.cargarEjercicios();
       },
-      error: () => {
+      error: (err) => {
+        console.warn("Progreso: Error cargando plan desde backend:", err);
         // Fallback a localStorage
         this.cargarPlanDesdeLocalStorage();
         this.cargarEjercicios();
@@ -119,29 +191,110 @@ export class Progreso implements OnInit {
 
   cargarPlanDesdeLocalStorage(): void {
     if (!this.usuarioId) {
+      this.planActivo = null;
+      console.log("Progreso: No hay usuarioId, planActivo = null");
       return;
     }
 
     const planGuardado = localStorage.getItem(`plan-activo-${this.usuarioId}`);
+    console.log("Progreso: Plan desde localStorage:", planGuardado);
+
     if (planGuardado) {
       try {
-        this.planActivo = JSON.parse(planGuardado);
-        this.cargarEjerciciosDelPlan();
-      } catch {
+        const plan = JSON.parse(planGuardado);
+        console.log("Progreso: Plan parseado:", plan);
+
+        // Verificar que el plan tenga la estructura correcta
+        if (plan && (plan.entrenamientoId || plan.entrenamiento)) {
+          this.planActivo = plan;
+          console.log("Progreso: Plan activo asignado:", this.planActivo);
+
+          // Si el plan tiene entrenamientoId pero no entrenamiento completo, cargarlo
+          const planActivo = this.planActivo;
+          if (planActivo && planActivo.entrenamientoId) {
+            if (
+              !planActivo.entrenamiento ||
+              !planActivo.entrenamiento.ejerciciosIds
+            ) {
+              console.log(
+                "Progreso: Cargando entrenamiento completo para ID:",
+                planActivo.entrenamientoId
+              );
+              this.cargarEntrenamientoCompleto(planActivo.entrenamientoId);
+            } else {
+              console.log(
+                "Progreso: Plan tiene entrenamiento, cargando ejercicios"
+              );
+              this.cargarEjerciciosDelPlan();
+            }
+          } else if (planActivo && planActivo.entrenamiento) {
+            console.log(
+              "Progreso: Plan tiene entrenamiento, cargando ejercicios"
+            );
+            this.cargarEjerciciosDelPlan();
+          } else {
+            console.log(
+              "Progreso: Plan no tiene entrenamiento ni entrenamientoId"
+            );
+          }
+        } else {
+          console.log(
+            "Progreso: Plan no válido (sin entrenamientoId ni entrenamiento)"
+          );
+          this.planActivo = null;
+        }
+      } catch (error) {
+        console.error("Error parseando plan desde localStorage:", error);
         this.planActivo = null;
       }
+    } else {
+      console.log("Progreso: No hay plan guardado en localStorage");
+      this.planActivo = null;
     }
   }
 
+  cargarEntrenamientoCompleto(entrenamientoId: number): void {
+    console.log(
+      "Progreso: Cargando entrenamiento completo, ID:",
+      entrenamientoId
+    );
+    this.entrenamientoService.obtenerPorId(entrenamientoId).subscribe({
+      next: (entrenamiento) => {
+        console.log("Progreso: Entrenamiento cargado:", entrenamiento);
+        if (this.planActivo) {
+          if (!this.planActivo.entrenamiento) {
+            this.planActivo.entrenamiento = entrenamiento;
+          } else {
+            // Actualizar con los datos del backend
+            this.planActivo.entrenamiento = {
+              ...this.planActivo.entrenamiento,
+              ...entrenamiento,
+            };
+          }
+          console.log(
+            "Progreso: Plan actualizado con entrenamiento:",
+            this.planActivo
+          );
+          this.cargarEjerciciosDelPlan();
+        }
+      },
+      error: (err) => {
+        console.error("Error cargando entrenamiento completo:", err);
+        // Intentar cargar ejercicios de todas formas
+        this.cargarEjerciciosDelPlan();
+      },
+    });
+  }
+
   cargarEjerciciosDelPlan(): void {
-    if (!this.planActivo?.entrenamiento) {
+    if (!this.planActivo) {
       this.ejerciciosDelPlan = [];
       return;
     }
 
-    // Si ya tiene ejercicios cargados
+    // Si el plan tiene entrenamiento con ejercicios ya cargados
     if (
-      this.planActivo.entrenamiento.ejercicios &&
+      this.planActivo.entrenamiento?.ejercicios &&
       this.planActivo.entrenamiento.ejercicios.length > 0
     ) {
       this.ejerciciosDelPlan = this.planActivo.entrenamiento.ejercicios;
@@ -150,7 +303,7 @@ export class Progreso implements OnInit {
 
     // Si tiene IDs de ejercicios, cargarlos
     if (
-      this.planActivo.entrenamiento.ejerciciosIds &&
+      this.planActivo.entrenamiento?.ejerciciosIds &&
       this.planActivo.entrenamiento.ejerciciosIds.length > 0
     ) {
       const observables = this.planActivo.entrenamiento.ejerciciosIds.map(
@@ -170,7 +323,21 @@ export class Progreso implements OnInit {
         },
       });
     } else {
-      this.ejerciciosDelPlan = [];
+      // Si no tiene ejerciciosIds, intentar cargar el entrenamiento completo
+      if (this.planActivo.entrenamientoId) {
+        this.ejercicioService.listar().subscribe({
+          next: (todosEjercicios) => {
+            // Intentar obtener el entrenamiento completo
+            // Por ahora, dejamos ejerciciosDelPlan vacío si no hay IDs
+            this.ejerciciosDelPlan = [];
+          },
+          error: () => {
+            this.ejerciciosDelPlan = [];
+          },
+        });
+      } else {
+        this.ejerciciosDelPlan = [];
+      }
     }
   }
 
@@ -189,10 +356,25 @@ export class Progreso implements OnInit {
   }
 
   get ejerciciosDisponibles(): Ejercicio[] {
-    if (this.mostrarSoloPlanActivo && this.ejerciciosDelPlan.length > 0) {
+    // Solo mostrar ejercicios del plan activo si existe
+    if (this.planActivo && this.ejerciciosDelPlan.length > 0) {
       return this.ejerciciosDelPlan;
     }
-    return this.ejercicios;
+    // Si no hay plan activo, no mostrar ejercicios
+    return [];
+  }
+
+  get tienePlanActivo(): boolean {
+    // Verificar que existe plan activo y tiene entrenamiento o entrenamientoId
+    const tienePlan = this.planActivo !== null;
+    const tieneEntrenamiento =
+      this.planActivo?.entrenamiento !== null &&
+      this.planActivo?.entrenamiento !== undefined;
+    const tieneEntrenamientoId =
+      this.planActivo?.entrenamientoId !== null &&
+      this.planActivo?.entrenamientoId !== undefined;
+
+    return tienePlan && (tieneEntrenamiento || tieneEntrenamientoId);
   }
 
   registrarProgreso(): void {
