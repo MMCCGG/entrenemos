@@ -29,6 +29,11 @@ public class EjercicioController {
         return ejercicioService.obtenerPorId(id);
     }
 
+    @PutMapping("/{id}")
+    public EjercicioDto actualizar(@PathVariable Long id, @RequestBody EjercicioDto dto) {
+        return ejercicioService.actualizar(id, dto);
+    }
+
     @DeleteMapping("/{id}")
     public void eliminar(@PathVariable Long id) {
         ejercicioService.eliminar(id);

@@ -232,7 +232,16 @@ export class ProgramasComponent implements OnInit {
   abrirFormularioEjercicio(ejercicio?: Ejercicio): void {
     if (ejercicio) {
       this.editandoEjercicio = true;
-      this.ejercicioForm = { ...ejercicio };
+      // Copiar todos los campos explícitamente para asegurar el binding
+      this.ejercicioForm = {
+        id: ejercicio.id,
+        nombre: ejercicio.nombre || "",
+        descripcion: ejercicio.descripcion || "",
+        tipo: ejercicio.tipo || "",
+        repeticiones: ejercicio.repeticiones ?? undefined,
+        peso: ejercicio.peso ?? undefined,
+        videoUrl: ejercicio.videoUrl || "",
+      };
     } else {
       this.editandoEjercicio = false;
       this.ejercicioForm = {

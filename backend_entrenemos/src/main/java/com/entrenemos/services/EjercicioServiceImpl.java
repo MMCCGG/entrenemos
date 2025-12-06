@@ -42,6 +42,22 @@ public class EjercicioServiceImpl implements EjercicioService{
     }
 
     @Override
+    public EjercicioDto actualizar(Long id, EjercicioDto dto){
+        Ejercicio e = ejercicioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ejercicio no encontrado"));
+        
+        e.setNombre(dto.getNombre());
+        e.setDescripcion(dto.getDescripcion());
+        e.setTipo(dto.getTipo());
+        e.setVideoUrl(dto.getVideoUrl());
+        e.setRepeticiones(dto.getRepeticiones());
+        e.setPeso(dto.getPeso());
+        
+        e = ejercicioRepository.save(e);
+        return new EjercicioDto(e.getId(), e.getNombre(), e.getDescripcion(), e.getRepeticiones(), e.getPeso(), e.getTipo(), e.getVideoUrl());
+    }
+
+    @Override
     public  void eliminar(Long id){
         ejercicioRepository.deleteById(id);
     }
