@@ -3,120 +3,14 @@
     <div class="page-container">
         <h1>📊 Progreso</h1>
 
-        <!-- Cronómetro WOD -->
-        <app-wod-timer />
-
-        <h2 class="seccion-titulo">Registra tu progreso</h2>
-
-        <!-- Información del plan activo -->
-        @if (tienePlanActivo) {
-        <div class="plan-activo-info">
-            <div class="plan-activo-header">
-                <h3>🎯 Plan Activo: {{ planActivo?.entrenamiento?.nombre || 'Cargando...' }}</h3>
-                <div class="progreso-plan">
-                    <span class="progreso-texto">Progreso: {{ obtenerProgresoPlan() }}%</span>
-                    <div class="progreso-bar-mini">
-                        <div class="progreso-fill-mini" [style.width.%]="obtenerProgresoPlan()"></div>
-                    </div>
-                </div>
+        <!-- Placeholder -->
+        <div class="placeholder-container">
+            <div class="placeholder-content">
+                <span class="placeholder-icon">📈</span>
+                <h2>Histórico de Ejercicios</h2>
+                <p>Próximamente podrás ver aquí tu historial completo de ejercicios realizados.</p>
             </div>
         </div>
-        } @else {
-        <div class="sin-plan-info">
-            <div class="sin-plan-mensaje">
-                <span class="sin-plan-icon">🎯</span>
-                <p>No tienes un plan activo. Selecciona un plan para comenzar a registrar tu progreso.</p>
-                <a routerLink="/rutina" class="btn-seleccionar-plan">Seleccionar Plan</a>
-            </div>
-        </div>
-        }
-
-        <!-- Mensaje de éxito -->
-        @if (exito) {
-        <div class="mensaje-exito">
-            <p>✅ ¡Progreso registrado correctamente!</p>
-        </div>
-        }
-
-        <!-- Mensaje de error -->
-        @if (error) {
-        <div class="mensaje-error">
-            <p>❌ {{ error }}</p>
-        </div>
-        }
-
-        <!-- Estado de carga -->
-        @if (cargando) {
-        <div class="estado-carga">
-            <div class="spinner"></div>
-            <p>Cargando...</p>
-        </div>
-        }
-
-        <!-- Formulario de registro -->
-        <form class="formulario-progreso" (ngSubmit)="registrarProgreso()">
-            <div class="campo-formulario">
-                <label for="ejercicio">Ejercicio</label>
-                @if (tienePlanActivo) {
-                <select id="ejercicio" class="campo-input" [(ngModel)]="ejercicioSeleccionadoId" name="ejercicio"
-                    [disabled]="guardando || cargando" required>
-                    <option [value]="null">Selecciona un ejercicio</option>
-                    @for (ejercicio of ejerciciosDisponibles; track ejercicio.id) {
-                    <option [value]="ejercicio.id">
-                        {{ ejercicio.nombre }}
-                        @if (esEjercicioCompletado(ejercicio.id!)) {
-                        ✅
-                        }
-                    </option>
-                    }
-                </select>
-                } @else {
-                <select id="ejercicio" class="campo-input" disabled>
-                    <option [value]="null">Selecciona plan</option>
-                </select>
-                <p class="ayuda-texto">⚠️ Necesitas tener un plan activo para registrar ejercicios</p>
-                }
-                @if (planActivo && ejerciciosDelPlan.length === 0) {
-                <p class="ayuda-texto">⚠️ El plan activo no tiene ejercicios asignados</p>
-                }
-            </div>
-
-            <div class="campo-formulario">
-                <label for="fecha">Fecha</label>
-                <input type="date" id="fecha" class="campo-input" [(ngModel)]="fecha" name="fecha"
-                    [disabled]="guardando" required />
-            </div>
-
-            <div class="metricas-grid">
-                <div class="campo-formulario">
-                    <label for="peso">Peso (kg)</label>
-                    <input type="number" id="peso" class="campo-input" [(ngModel)]="peso" name="peso" placeholder="0"
-                        step="0.1" min="0" [disabled]="guardando" />
-                </div>
-
-                <div class="campo-formulario">
-                    <label for="repeticiones">Repeticiones</label>
-                    <input type="number" id="repeticiones" class="campo-input" [(ngModel)]="repeticiones"
-                        name="repeticiones" placeholder="0" min="0" [disabled]="guardando" />
-                </div>
-
-                <div class="campo-formulario">
-                    <label for="tiempo">Tiempo (seg)</label>
-                    <input type="number" id="tiempo" class="campo-input" [(ngModel)]="tiempo" name="tiempo"
-                        placeholder="0" step="0.1" min="0" [disabled]="guardando" />
-                </div>
-            </div>
-
-
-            <button type="submit" class="boton-guardar" [disabled]="guardando">
-                @if (!guardando) {
-                <span>💾 Guardar Progreso</span>
-                }
-                @if (guardando) {
-                <span>⏳ Guardando...</span>
-                }
-            </button>
-        </form>
     </div>
     <app-bottom-nav />
 </div>

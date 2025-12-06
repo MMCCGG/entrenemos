@@ -5,13 +5,13 @@
 
         <!-- Selector de vista -->
         <div class="vista-selector">
-            <button class="vista-btn" [class.activo]="vistaSeleccionada === 'disponibles'"
-                (click)="cambiarVista('disponibles')">
-                📋 Disponibles
-            </button>
             <button class="vista-btn" [class.activo]="vistaSeleccionada === 'mi-plan'"
                 (click)="cambiarVista('mi-plan')">
                 🎯 Mi Plan
+            </button>
+            <button class="vista-btn" [class.activo]="vistaSeleccionada === 'disponibles'"
+                (click)="cambiarVista('disponibles')">
+                📋 Disponibles
             </button>
         </div>
 
@@ -40,14 +40,19 @@
             }
 
             @for (plan of planesDisponibles; track plan.entrenamiento.id) {
-            <div class="plan-card">
+            <div class="plan-card" [class.plan-activo-marcado]="esPlanActivo(plan)">
                 <div class="plan-header">
                     <h2 class="plan-nombre">{{ plan.entrenamiento.nombre }}</h2>
-                    @if (plan.dificultad) {
-                    <span class="dificultad-badge" [class]="plan.dificultad.toLowerCase()">
-                        {{ plan.dificultad }}
-                    </span>
-                    }
+                    <div class="plan-badges">
+                        @if (esPlanActivo(plan)) {
+                        <span class="plan-activo-indicador">✅ Activo</span>
+                        }
+                        @if (plan.dificultad) {
+                        <span class="dificultad-badge" [class]="plan.dificultad.toLowerCase()">
+                            {{ plan.dificultad }}
+                        </span>
+                        }
+                    </div>
                 </div>
 
                 @if (plan.entrenamiento.descripcion) {
@@ -86,87 +91,111 @@
         <!-- Vista: Mi Plan Activo -->
         @if (!cargando && vistaSeleccionada === 'mi-plan') {
         <div class="mi-plan-container">
-            @if (!planActivo) {
-            <div class="sin-plan">
-                <div class="sin-plan-icon">🎯</div>
-                <h2>No tienes un plan activo</h2>
-                <p>Selecciona un plan de entrenamiento para comenzar tu viaje fitness</p>
-                <button class="btn-ver-disponibles" (click)="cambiarVista('disponibles')">
-                    Ver Planes Disponibles
-                </button>
+            <!-- Cronómetro WOD -->
+            <app-wod-timer />
+
+            <h2 class="seccion-titulo">Registra tu progreso</h2>
+
+            <!-- Información del plan activo -->
+            @if (tienePlanActivo) {
+            <div class="plan-activo-info">
+                <div class="plan-activo-header">
+                    <h3>🎯 Plan Activo: {{ planActivo?.entrenamiento?.nombre || 'Cargando...' }}</h3>
+                    <div class="progreso-plan">
+                        <span class="progreso-texto">Progreso: {{ obtenerProgresoPlan() }}%</span>
+                        <div class="progreso-bar-mini">
+                            <div class="progreso-fill-mini" [style.width.%]="obtenerProgresoPlan()"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
             } @else {
-            <div class="plan-activo-card">
-                <div class="plan-activo-header">
-                    <h2 class="plan-activo-nombre">{{ planActivo.entrenamiento?.nombre }}</h2>
-                    <span class="plan-activo-badge">Activo</span>
-                </div>
-
-                @if (planActivo.entrenamiento && planActivo.entrenamiento.descripcion) {
-                <p class="plan-activo-descripcion">{{ planActivo.entrenamiento.descripcion }}</p>
-                }
-
-                <!-- Progreso -->
-                <div class="progreso-section">
-                    <div class="progreso-header">
-                        <span class="progreso-label">Progreso</span>
-                        <span class="progreso-porcentaje">{{ obtenerProgresoPlan() }}%</span>
-                    </div>
-                    <div class="progreso-bar">
-                        <div class="progreso-fill" [style.width.%]="obtenerProgresoPlan()"></div>
-                    </div>
-                </div>
-
-                <!-- Estadísticas -->
-                <div class="estadisticas-grid">
-                    <div class="estadistica-item">
-                        <span class="estadistica-icon">✅</span>
-                        <span class="estadistica-valor">
-                            {{ planActivo.ejerciciosCompletados?.length || 0 }}
-                        </span>
-                        <span class="estadistica-label">Completados</span>
-                    </div>
-                    <div class="estadistica-item">
-                        <span class="estadistica-icon">🏋️</span>
-                        <span class="estadistica-valor">
-                            @if (planActivo.entrenamiento) {
-                            {{ (planActivo.entrenamiento.ejercicios?.length) ??
-                            (planActivo.entrenamiento.ejerciciosIds?.length) ?? 0 }}
-                            } @else {
-                            0
-                            }
-                        </span>
-                        <span class="estadistica-label">Total</span>
-                    </div>
-                    <div class="estadistica-item">
-                        <span class="estadistica-icon">📅</span>
-                        <span class="estadistica-valor">{{ calcularDiasRestantes() }}</span>
-                        <span class="estadistica-label">Días restantes</span>
-                    </div>
-                </div>
-
-                <!-- Fechas -->
-                <div class="fechas-section">
-                    <div class="fecha-item">
-                        <span class="fecha-label">Inicio:</span>
-                        <span class="fecha-valor">{{ formatearFecha(planActivo.fechaInicio) }}</span>
-                    </div>
-                    @if (planActivo.fechaFin) {
-                    <div class="fecha-item">
-                        <span class="fecha-label">Fin:</span>
-                        <span class="fecha-valor">{{ formatearFecha(planActivo.fechaFin) }}</span>
-                    </div>
-                    }
-                </div>
-
-                <!-- Acciones -->
-                <div class="acciones-plan">
-                    <button class="btn-ver-plan" (click)="verPlanActivo()">
-                        🏋️ Ver Entrenamiento
-                    </button>
+            <div class="sin-plan-info">
+                <div class="sin-plan-mensaje">
+                    <span class="sin-plan-icon">🎯</span>
+                    <p>No tienes un plan activo. Selecciona un plan para comenzar a registrar tu progreso.</p>
+                    <button class="btn-seleccionar-plan" (click)="cambiarVista('disponibles')">Seleccionar Plan</button>
                 </div>
             </div>
             }
+
+            <!-- Mensaje de éxito -->
+            @if (exito) {
+            <div class="mensaje-exito">
+                <p>✅ ¡Progreso registrado correctamente!</p>
+            </div>
+            }
+
+            <!-- Mensaje de error -->
+            @if (error) {
+            <div class="mensaje-error">
+                <p>❌ {{ error }}</p>
+            </div>
+            }
+
+            <!-- Formulario de registro -->
+            <form class="formulario-progreso" (ngSubmit)="registrarProgreso()">
+                <div class="campo-formulario">
+                    <label for="ejercicio">Ejercicio</label>
+                    @if (tienePlanActivo) {
+                    <select id="ejercicio" class="campo-input" [(ngModel)]="ejercicioSeleccionadoId" name="ejercicio"
+                        [disabled]="guardando || cargando" required>
+                        <option [value]="null">Selecciona un ejercicio</option>
+                        @for (ejercicio of ejerciciosDisponibles; track ejercicio.id) {
+                        <option [value]="ejercicio.id">
+                            {{ ejercicio.nombre }}
+                            @if (esEjercicioCompletado(ejercicio.id!)) {
+                            ✅
+                            }
+                        </option>
+                        }
+                    </select>
+                    } @else {
+                    <select id="ejercicio" class="campo-input" disabled>
+                        <option [value]="null">Selecciona plan</option>
+                    </select>
+                    <p class="ayuda-texto">⚠️ Necesitas tener un plan activo para registrar ejercicios</p>
+                    }
+                    @if (planActivo && ejerciciosDelPlan.length === 0) {
+                    <p class="ayuda-texto">⚠️ El plan activo no tiene ejercicios asignados</p>
+                    }
+                </div>
+
+                <div class="campo-formulario">
+                    <label for="fecha">Fecha</label>
+                    <input type="date" id="fecha" class="campo-input" [(ngModel)]="fecha" name="fecha"
+                        [disabled]="guardando" required />
+                </div>
+
+                <div class="metricas-grid">
+                    <div class="campo-formulario">
+                        <label for="peso">Peso (kg)</label>
+                        <input type="number" id="peso" class="campo-input" [(ngModel)]="peso" name="peso"
+                            placeholder="0" step="0.1" min="0" [disabled]="guardando" />
+                    </div>
+
+                    <div class="campo-formulario">
+                        <label for="repeticiones">Repeticiones</label>
+                        <input type="number" id="repeticiones" class="campo-input" [(ngModel)]="repeticiones"
+                            name="repeticiones" placeholder="0" min="0" [disabled]="guardando" />
+                    </div>
+
+                    <div class="campo-formulario">
+                        <label for="tiempo">Tiempo (seg)</label>
+                        <input type="number" id="tiempo" class="campo-input" [(ngModel)]="tiempo" name="tiempo"
+                            placeholder="0" step="0.1" min="0" [disabled]="guardando" />
+                    </div>
+                </div>
+
+                <button type="submit" class="boton-guardar" [disabled]="guardando">
+                    @if (!guardando) {
+                    <span>💾 Guardar Progreso</span>
+                    }
+                    @if (guardando) {
+                    <span>⏳ Guardando...</span>
+                    }
+                </button>
+            </form>
         </div>
         }
     </div>

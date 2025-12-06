@@ -129,6 +129,30 @@
   gap: 12px;
 }
 
+.plan-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.plan-activo-indicador {
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.plan-card.plan-activo-marcado {
+  border: 2px solid #4caf50;
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.2);
+}
+
 .plan-nombre {
   font-size: 20px;
   font-weight: 700;
@@ -451,4 +475,224 @@
 .btn-ver-plan:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* Estilos del formulario de progreso (copiados de progreso.css) */
+.seccion-titulo {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 32px 0 24px 0;
+  text-align: center;
+  color: #1a1a1a;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.mensaje-exito {
+  background: #e8f5e9;
+  border: 2px solid #4caf50;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  text-align: center;
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.mensaje-error {
+  background: #ffebee;
+  border: 2px solid #e53935;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 20px 0;
+  text-align: center;
+  color: #c62828;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 2px 4px rgba(229, 57, 53, 0.2);
+}
+
+.mensaje-error p {
+  margin: 0;
+}
+
+.formulario-progreso {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.campo-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.campo-formulario label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+
+.campo-input {
+  padding: 14px 18px;
+  border: 2px solid #d0d5dd;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 16px;
+  font-family: inherit;
+  transition: all 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+.campo-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.campo-input:disabled {
+  background: #e0e0e0;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.metricas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.metricas-grid .campo-formulario {
+  margin: 0;
+}
+
+.metricas-grid .campo-input {
+  text-align: center;
+}
+
+.boton-guardar {
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.boton-guardar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.boton-guardar:disabled {
+  background: #999;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.plan-activo-info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.plan-activo-info .plan-activo-header h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+}
+
+.progreso-plan {
+  margin-top: 12px;
+}
+
+.progreso-texto {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  opacity: 0.95;
+}
+
+.progreso-bar-mini {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progreso-fill-mini {
+  height: 100%;
+  background: white;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.sin-plan-info {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+.sin-plan-mensaje {
+  text-align: center;
+}
+
+.sin-plan-mensaje .sin-plan-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.sin-plan-mensaje p {
+  margin: 0 0 16px 0;
+  font-size: 15px;
+  line-height: 1.5;
+  opacity: 0.95;
+}
+
+.btn-seleccionar-plan {
+  display: inline-block;
+  padding: 12px 24px;
+  background: white;
+  color: #ff9800;
+  text-decoration: none;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.btn-seleccionar-plan:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ayuda-texto {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+  font-style: italic;
 }

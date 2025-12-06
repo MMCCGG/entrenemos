@@ -1,11 +1,14 @@
 import { Component, OnInit, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
 import { Header } from "../../../shared/components/header/header";
 import { BottomNav } from "../../../shared/components/bottom-nav/bottom-nav";
+import { WodTimerComponent } from "../../../shared/components/wod-timer/wod-timer";
 import { EntrenamientoService } from "../../../core/services/entrenamiento.service";
 import { EjercicioService } from "../../../core/services/ejercicio.service";
 import { PlanUsuarioService } from "../../../core/services/plan-usuario.service";
+import { ProgresoService } from "../../../core/services/progreso.service";
 import { AuthService } from "../../../core/services/auth.service";
 import { UsuariosService } from "../../../core/services/usuarios.service";
 import { Entrenamiento } from "../../../shared/models/entrenamiento.model";
@@ -14,6 +17,7 @@ import {
   PlanUsuario,
   PlanDisponible,
 } from "../../../shared/models/plan-usuario.model";
+import { Progreso as ProgresoModelo } from "../../../shared/models/progreso.model";
 import { Usuario } from "../../../shared/models/usuario";
 import { forkJoin, map, of } from "rxjs";
 
@@ -23,7 +27,7 @@ interface EntrenamientoConEjercicios extends Entrenamiento {
 
 @Component({
   selector: "app-programas",
-  imports: [CommonModule, Header, BottomNav],
+  imports: [CommonModule, FormsModule, Header, BottomNav, WodTimerComponent],
   templateUrl: "./programas.html",
   styleUrl: "./programas.css",
 })
@@ -31,17 +35,29 @@ export class Programas implements OnInit {
   private entrenamientoService = inject(EntrenamientoService);
   private ejercicioService = inject(EjercicioService);
   private planUsuarioService = inject(PlanUsuarioService);
+  private progresoService = inject(ProgresoService);
   private authService = inject(AuthService);
   private usuariosService = inject(UsuariosService);
   router = inject(Router);
 
-  vistaSeleccionada: "disponibles" | "mi-plan" = "disponibles";
+  vistaSeleccionada: "disponibles" | "mi-plan" = "mi-plan";
   planesDisponibles: PlanDisponible[] = [];
   planActivo: PlanUsuario | null = null;
   usuario: Usuario | null = null;
   cargando = false;
   error: string | null = null;
   asignando = false;
+
+  // Variables para el formulario de progreso
+  ejercicios: Ejercicio[] = [];
+  ejerciciosDelPlan: Ejercicio[] = [];
+  ejercicioSeleccionadoId: number | null = null;
+  peso: number | null = null;
+  repeticiones: number | null = null;
+  tiempo: number | null = null;
+  fecha: string = new Date().toISOString().split("T")[0];
+  guardando = false;
+  exito = false;
 
   ngOnInit(): void {
     this.cargarUsuarioYPlan();
@@ -53,6 +69,7 @@ export class Programas implements OnInit {
       this.cargarPlanesDisponibles();
     } else {
       this.cargarPlanActivo();
+      this.cargarEjercicios();
     }
   }
 
@@ -61,8 +78,13 @@ export class Programas implements OnInit {
     this.error = null;
     this.cargarUsuario().then(() => {
       if (this.usuario && this.usuario.id) {
-        this.cargarPlanActivo();
-        this.cargarPlanesDisponibles();
+        // Cargar según la vista seleccionada por defecto (mi-plan)
+        if (this.vistaSeleccionada === "mi-plan") {
+          this.cargarPlanActivo();
+          this.cargarEjercicios();
+        } else {
+          this.cargarPlanesDisponibles();
+        }
       } else {
         this.error =
           "No se pudo cargar la información del usuario. Por favor, recarga la página.";
@@ -233,10 +255,14 @@ export class Programas implements OnInit {
             (!plan.entrenamiento.ejercicios ||
               plan.entrenamiento.ejercicios.length === 0)
           ) {
-            this.cargarEjerciciosDelPlan(plan);
+            this.cargarEjerciciosDelPlanConPlan(plan);
           } else {
             this.planActivo = plan;
             this.cargando = false;
+            if (this.vistaSeleccionada === "mi-plan") {
+              this.cargarEjerciciosDelPlan();
+              this.cargarEjercicios();
+            }
           }
         } else {
           // Fallback a localStorage si el backend no tiene plan
@@ -270,6 +296,11 @@ export class Programas implements OnInit {
         if (this.planActivo && !this.planActivo.id) {
           this.sincronizarPlanConBackend();
         }
+        // Cargar ejercicios del plan si estamos en mi-plan
+        if (this.vistaSeleccionada === "mi-plan") {
+          this.cargarEjerciciosDelPlan();
+          this.cargarEjercicios();
+        }
       } catch {
         this.planActivo = null;
       }
@@ -279,7 +310,7 @@ export class Programas implements OnInit {
     this.cargando = false;
   }
 
-  cargarEjerciciosDelPlan(plan: PlanUsuario): void {
+  cargarEjerciciosDelPlanConPlan(plan: PlanUsuario): void {
     if (
       !plan.entrenamiento?.ejerciciosIds ||
       plan.entrenamiento.ejerciciosIds.length === 0
@@ -300,6 +331,11 @@ export class Programas implements OnInit {
         }
         this.planActivo = plan;
         this.cargando = false;
+        // Cargar ejercicios del plan para el formulario de progreso
+        if (this.vistaSeleccionada === "mi-plan") {
+          this.cargarEjerciciosDelPlan();
+          this.cargarEjercicios();
+        }
       },
       error: (err) => {
         console.error("Error cargando ejercicios del plan:", err);
@@ -408,6 +444,9 @@ export class Programas implements OnInit {
         this.planActivo = planCreado;
         this.asignando = false;
         this.vistaSeleccionada = "mi-plan";
+        // Cargar ejercicios del plan para el formulario de progreso
+        this.cargarEjerciciosDelPlan();
+        this.cargarEjercicios();
 
         // Guardar también en localStorage como backup
         if (this.usuario?.id) {
@@ -503,5 +542,217 @@ export class Programas implements OnInit {
     const fin = new Date(this.planActivo.fechaFin);
     const diff = fin.getTime() - hoy.getTime();
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  }
+
+  cargarEjerciciosDelPlan(): void {
+    if (!this.planActivo) {
+      this.ejerciciosDelPlan = [];
+      return;
+    }
+
+    // Si el plan tiene entrenamiento con ejercicios ya cargados
+    if (
+      this.planActivo.entrenamiento?.ejercicios &&
+      this.planActivo.entrenamiento.ejercicios.length > 0
+    ) {
+      this.ejerciciosDelPlan = this.planActivo.entrenamiento.ejercicios;
+      return;
+    }
+
+    // Si tiene IDs de ejercicios, cargarlos
+    if (
+      this.planActivo.entrenamiento?.ejerciciosIds &&
+      this.planActivo.entrenamiento.ejerciciosIds.length > 0
+    ) {
+      const observables = this.planActivo.entrenamiento.ejerciciosIds.map(
+        (id) => this.ejercicioService.obtenerPorId(id)
+      );
+
+      forkJoin(observables).subscribe({
+        next: (ejercicios) => {
+          this.ejerciciosDelPlan = ejercicios;
+          if (this.planActivo?.entrenamiento) {
+            this.planActivo.entrenamiento.ejercicios = ejercicios;
+          }
+        },
+        error: (err) => {
+          console.error("Error cargando ejercicios del plan:", err);
+          this.ejerciciosDelPlan = [];
+        },
+      });
+    } else {
+      this.ejerciciosDelPlan = [];
+    }
+  }
+
+  cargarEjercicios(): void {
+    this.ejercicioService.listar().subscribe({
+      next: (ejercicios) => {
+        this.ejercicios = ejercicios;
+      },
+      error: (err) => {
+        console.error("Error cargando ejercicios:", err);
+      },
+    });
+  }
+
+  get ejerciciosDisponibles(): Ejercicio[] {
+    // Solo mostrar ejercicios del plan activo si existe
+    if (this.planActivo && this.ejerciciosDelPlan.length > 0) {
+      return this.ejerciciosDelPlan;
+    }
+    // Si no hay plan activo, no mostrar ejercicios
+    return [];
+  }
+
+  get tienePlanActivo(): boolean {
+    const tienePlan = this.planActivo !== null;
+    const tieneEntrenamiento =
+      this.planActivo?.entrenamiento !== null &&
+      this.planActivo?.entrenamiento !== undefined;
+    const tieneEntrenamientoId =
+      this.planActivo?.entrenamientoId !== null &&
+      this.planActivo?.entrenamientoId !== undefined;
+
+    return tienePlan && (tieneEntrenamiento || tieneEntrenamientoId);
+  }
+
+  registrarProgreso(): void {
+    // Validaciones
+    if (!this.ejercicioSeleccionadoId) {
+      this.error = "Debes seleccionar un ejercicio";
+      return;
+    }
+
+    if (!this.peso && !this.repeticiones && !this.tiempo) {
+      this.error = "Debes registrar al menos peso, repeticiones o tiempo";
+      return;
+    }
+
+    if (!this.usuario?.id) {
+      this.error = "No se pudo identificar al usuario";
+      return;
+    }
+
+    // Preparar datos
+    const progreso: ProgresoModelo = {
+      fecha: this.fecha,
+      peso: this.peso || undefined,
+      repeticiones: this.repeticiones || undefined,
+      tiempo: this.tiempo || undefined,
+      usuarioId: this.usuario.id,
+      ejercicioId: this.ejercicioSeleccionadoId,
+    };
+
+    this.guardando = true;
+    this.error = null;
+    this.exito = false;
+
+    this.progresoService.crear(progreso).subscribe({
+      next: () => {
+        this.exito = true;
+        this.guardando = false;
+
+        // Si hay un plan activo, marcar el ejercicio como completado
+        if (this.planActivo && this.ejercicioSeleccionadoId) {
+          this.marcarEjercicioCompletadoEnPlan(this.ejercicioSeleccionadoId);
+        }
+
+        this.resetearFormulario();
+        // Ocultar mensaje de éxito después de 3 segundos
+        setTimeout(() => {
+          this.exito = false;
+        }, 3000);
+      },
+      error: (err) => {
+        console.error("Error guardando progreso:", err);
+        this.error = "Error al guardar el progreso";
+        this.guardando = false;
+      },
+    });
+  }
+
+  marcarEjercicioCompletadoEnPlan(ejercicioId: number): void {
+    if (!this.planActivo || !this.planActivo.id) {
+      // Si no hay ID del plan (solo localStorage), actualizar localmente
+      if (this.planActivo) {
+        if (!this.planActivo.ejerciciosCompletados) {
+          this.planActivo.ejerciciosCompletados = [];
+        }
+        if (!this.planActivo.ejerciciosCompletados.includes(ejercicioId)) {
+          this.planActivo.ejerciciosCompletados.push(ejercicioId);
+          this.planActivo.fechaUltimaSesion = new Date()
+            .toISOString()
+            .split("T")[0];
+
+          // Guardar en localStorage
+          if (this.usuario?.id) {
+            localStorage.setItem(
+              `plan-activo-${this.usuario.id}`,
+              JSON.stringify(this.planActivo)
+            );
+          }
+        }
+      }
+      return;
+    }
+
+    // Intentar marcar en el backend
+    this.planUsuarioService
+      .marcarEjercicioCompletado(this.planActivo.id, ejercicioId)
+      .subscribe({
+        next: (planActualizado) => {
+          this.planActivo = planActualizado;
+          // Actualizar también localStorage
+          if (this.usuario?.id) {
+            localStorage.setItem(
+              `plan-activo-${this.usuario.id}`,
+              JSON.stringify(this.planActivo)
+            );
+          }
+        },
+        error: (err) => {
+          console.warn("Error marcando ejercicio completado en backend:", err);
+          // Actualizar localmente como fallback
+          if (this.planActivo) {
+            if (!this.planActivo.ejerciciosCompletados) {
+              this.planActivo.ejerciciosCompletados = [];
+            }
+            if (!this.planActivo.ejerciciosCompletados.includes(ejercicioId)) {
+              this.planActivo.ejerciciosCompletados.push(ejercicioId);
+              this.planActivo.fechaUltimaSesion = new Date()
+                .toISOString()
+                .split("T")[0];
+
+              if (this.usuario?.id) {
+                localStorage.setItem(
+                  `plan-activo-${this.usuario.id}`,
+                  JSON.stringify(this.planActivo)
+                );
+              }
+            }
+          }
+        },
+      });
+  }
+
+  resetearFormulario(): void {
+    this.ejercicioSeleccionadoId = null;
+    this.peso = null;
+    this.repeticiones = null;
+    this.tiempo = null;
+    this.fecha = new Date().toISOString().split("T")[0];
+  }
+
+  esEjercicioCompletado(ejercicioId: number): boolean {
+    if (!this.planActivo) return false;
+    return (
+      this.planActivo.ejerciciosCompletados?.includes(ejercicioId) || false
+    );
+  }
+
+  esPlanActivo(plan: PlanDisponible): boolean {
+    if (!this.planActivo || !plan.entrenamiento) return false;
+    return this.planActivo.entrenamientoId === plan.entrenamiento.id;
   }
 }
