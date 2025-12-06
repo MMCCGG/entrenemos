@@ -68,9 +68,12 @@
                     </div>
                 </div>
 
-                <button class="btn-seleccionar" (click)="seleccionarPlan(plan)" [disabled]="asignando">
+                <button class="btn-seleccionar" (click)="seleccionarPlan(plan)"
+                    [disabled]="asignando || !usuario || !usuario.id">
                     @if (asignando) {
                     <span>⏳ Asignando...</span>
+                    } @else if (!usuario || !usuario.id) {
+                    <span>⏳ Cargando usuario...</span>
                     } @else {
                     <span>✅ Seleccionar Plan</span>
                     }

@@ -6,7 +6,28 @@
         <!-- Cronómetro WOD -->
         <app-wod-timer />
 
-        <h2 class="seccion-titulo">Registra tus tiempos</h2>
+        <h2 class="seccion-titulo">Registra tu progreso</h2>
+
+        <!-- Información del plan activo -->
+        @if (planActivo && planActivo.entrenamiento) {
+        <div class="plan-activo-info">
+            <div class="plan-activo-header">
+                <h3>🎯 Plan Activo: {{ planActivo.entrenamiento.nombre }}</h3>
+                <div class="progreso-plan">
+                    <span class="progreso-texto">Progreso: {{ obtenerProgresoPlan() }}%</span>
+                    <div class="progreso-bar-mini">
+                        <div class="progreso-fill-mini" [style.width.%]="obtenerProgresoPlan()"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="plan-activo-acciones">
+                <label class="toggle-label">
+                    <input type="checkbox" [(ngModel)]="mostrarSoloPlanActivo" name="mostrarSoloPlan" />
+                    <span>Mostrar solo ejercicios del plan activo</span>
+                </label>
+            </div>
+        </div>
+        }
 
         <!-- Mensaje de éxito -->
         @if (exito) {
@@ -22,19 +43,33 @@
         </div>
         }
 
+        <!-- Estado de carga -->
+        @if (cargando) {
+        <div class="estado-carga">
+            <div class="spinner"></div>
+            <p>Cargando...</p>
+        </div>
+        }
+
         <!-- Formulario de registro -->
         <form class="formulario-progreso" (ngSubmit)="registrarProgreso()">
             <div class="campo-formulario">
                 <label for="ejercicio">Ejercicio</label>
                 <select id="ejercicio" class="campo-input" [(ngModel)]="ejercicioSeleccionadoId" name="ejercicio"
-                    [disabled]="guardando" required>
+                    [disabled]="guardando || cargando" required>
                     <option [value]="null">Selecciona un ejercicio</option>
-                    @for (ejercicio of ejercicios; track ejercicio.id) {
+                    @for (ejercicio of ejerciciosDisponibles; track ejercicio.id) {
                     <option [value]="ejercicio.id">
                         {{ ejercicio.nombre }}
+                        @if (esEjercicioCompletado(ejercicio.id!)) {
+                        ✅
+                        }
                     </option>
                     }
                 </select>
+                @if (mostrarSoloPlanActivo && ejerciciosDelPlan.length === 0 && planActivo) {
+                <p class="ayuda-texto">⚠️ El plan activo no tiene ejercicios asignados</p>
+                }
             </div>
 
             <div class="campo-formulario">

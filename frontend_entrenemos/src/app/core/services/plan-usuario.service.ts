@@ -1,7 +1,7 @@
 import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable } from "rxjs";
-import { map } from "rxjs/operators";
+import { Observable, of, throwError } from "rxjs";
+import { map, catchError } from "rxjs/operators";
 import { API_BASE_URL } from "../../config/api.config";
 import {
   PlanUsuario,
@@ -35,9 +35,16 @@ export class PlanUsuarioService {
    * Obtener el plan activo de un usuario
    */
   obtenerPlanActivo(usuarioId: number): Observable<PlanUsuario | null> {
-    return this.http.get<PlanUsuario | null>(
-      `${this.apiUrl}/usuario/${usuarioId}/activo`
-    );
+    return this.http
+      .get<PlanUsuario | null>(`${this.apiUrl}/usuario/${usuarioId}/activo`)
+      .pipe(
+        catchError((error) => {
+          // Si el endpoint no existe o hay error, retornar null
+          // Esto permite que el frontend use localStorage como fallback
+          console.warn("Error obteniendo plan activo del backend:", error);
+          return of(null);
+        })
+      );
   }
 
   /**
@@ -54,10 +61,21 @@ export class PlanUsuarioService {
     planUsuarioId: number,
     ejercicioId: number
   ): Observable<PlanUsuario> {
-    return this.http.post<PlanUsuario>(
-      `${this.apiUrl}/${planUsuarioId}/ejercicio/${ejercicioId}/completar`,
-      {}
-    );
+    return this.http
+      .post<PlanUsuario>(
+        `${this.apiUrl}/${planUsuarioId}/ejercicio/${ejercicioId}/completar`,
+        {}
+      )
+      .pipe(
+        catchError((error) => {
+          // Si el endpoint no existe, lanzar error para que el componente maneje el fallback
+          console.warn(
+            "Error marcando ejercicio completado en backend:",
+            error
+          );
+          return throwError(() => error);
+        })
+      );
   }
 
   /**
@@ -118,15 +136,27 @@ export class PlanUsuarioService {
    * Calcular el progreso de un plan (porcentaje completado)
    */
   calcularProgreso(plan: PlanUsuario): number {
+    // Intentar usar ejercicios cargados primero
     if (
-      !plan.entrenamiento?.ejercicios ||
-      plan.entrenamiento.ejercicios.length === 0
+      plan.entrenamiento?.ejercicios &&
+      plan.entrenamiento.ejercicios.length > 0
     ) {
-      return 0;
+      const ejerciciosCompletados = plan.ejerciciosCompletados?.length || 0;
+      const totalEjercicios = plan.entrenamiento.ejercicios.length;
+      return Math.round((ejerciciosCompletados / totalEjercicios) * 100);
     }
-    const ejerciciosCompletados = plan.ejerciciosCompletados?.length || 0;
-    const totalEjercicios = plan.entrenamiento.ejercicios.length;
-    return Math.round((ejerciciosCompletados / totalEjercicios) * 100);
+
+    // Si no hay ejercicios cargados, usar IDs
+    if (
+      plan.entrenamiento?.ejerciciosIds &&
+      plan.entrenamiento.ejerciciosIds.length > 0
+    ) {
+      const ejerciciosCompletados = plan.ejerciciosCompletados?.length || 0;
+      const totalEjercicios = plan.entrenamiento.ejerciciosIds.length;
+      return Math.round((ejerciciosCompletados / totalEjercicios) * 100);
+    }
+
+    return 0;
   }
 
   /**
