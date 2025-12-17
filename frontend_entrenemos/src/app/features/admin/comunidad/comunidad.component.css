@@ -1,0 +1,25 @@
+/* El host ocupa todo el espacio disponible del content */
+:host {
+  display: block;
+  padding: 20px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* El chat con altura fija calculada */
+:host ::ng-deep .chat-wrap {
+  height: calc(100vh - 40px) !important;
+  max-height: calc(100vh - 40px) !important;
+  display: flex;
+  flex-direction: column;
+}
+
+:host ::ng-deep .chat-messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto !important;
+}
+
+:host ::ng-deep .chat-input {
+  flex-shrink: 0;
+}

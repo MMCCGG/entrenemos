@@ -1,12 +1,52 @@
+/* Wrapper principal - ocupa toda la pantalla */
 .page-wrapper {
   max-width: 414px;
   margin: 0 auto;
-  background: #d3d3d3;
-  min-height: 100vh;
+  background: linear-gradient(180deg, #f5f7fa 0%, #e8ecf1 100%);
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
+/* El header es sticky, ocupa su espacio en el flujo */
+.page-wrapper app-header {
+  flex-shrink: 0;
+}
+
+/* Contenedor principal - debe expandirse entre header y bottom-nav */
 .page-container {
-  color: black;
-  padding: 40px 20px;
-  padding-bottom: 100px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 16px;
+  padding-bottom: 100px; /* Espacio para el bottom-nav fixed */
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Título de la página */
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+  font-family: "Stardos Stencil", sans-serif;
+  flex-shrink: 0;
+}
+
+/* El chat ocupa todo el espacio restante */
+.page-container app-chat-window {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* El bottom-nav es fixed, no cuenta en el flujo */
+.page-wrapper app-bottom-nav {
+  flex-shrink: 0;
 }
