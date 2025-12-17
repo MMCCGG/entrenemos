@@ -86,7 +86,7 @@
 }
 
 .message.user .bubble {
-  background: linear-gradient(135deg, #dcf8c6 0%, #c8e6c9 100%);
+  background: #ebdac8;
   border-bottom-right-radius: 4px;
 }
 
