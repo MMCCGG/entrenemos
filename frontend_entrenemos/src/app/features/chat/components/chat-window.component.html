@@ -1,0 +1,23 @@
+<div class="chat-wrap">
+    <div class="chat-header"><strong>Comunidad</strong></div>
+
+    <div class="chat-messages">
+        @for (m of messages; track m.fecha) {
+        <div class="message" [ngClass]="m.tipo === 'ADMIN' ? 'admin' : m.tipo === 'ENTRENADOR' ? 'entrenador' : 'user'">
+            <div class="bubble">
+                <div class="meta">
+                    <small>{{ m.usuario.nombre }}</small>
+                    <small class="fecha">{{ m.fecha | date:'HH:mm' }}</small>
+                </div>
+                <div class="text">{{ m.contenido }}</div>
+            </div>
+        </div>
+        }
+    </div>
+
+    <div class="chat-input">
+        <input type="text" [(ngModel)]="messageInput" placeholder="Escribe un mensaje..."
+            (keyup.enter)="sendMessage()" />
+        <button (click)="sendMessage()" [disabled]="!messageInput.trim()">Enviar</button>
+    </div>
+</div>

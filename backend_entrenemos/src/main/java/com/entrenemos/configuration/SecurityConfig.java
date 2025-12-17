@@ -22,6 +22,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/usuarios/*/foto-perfil").authenticated()
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
                         .requestMatchers("/api/plan-usuario/**").authenticated()
+                        .requestMatchers("/api/mensajes/**").authenticated()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .anyRequest().authenticated()
                 )

@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
-import { Observable, tap } from "rxjs";
+import { Observable, tap, switchMap } from "rxjs";
 import { API_BASE_URL } from "../../config/api.config";
 import { LoginRequest, LoginResponse } from "../../shared/models/auth.model";
 import { Usuario } from "../../shared/models/usuario";
@@ -31,18 +31,25 @@ export class AuthService {
     }
   }
 
-  login(email: string, password: string): Observable<LoginResponse> {
+  login(email: string, password: string): Observable<Usuario> {
     const credentials: LoginRequest = { email, password };
     return this.http
       .post<LoginResponse>(`${this.apiUrl}/login`, credentials)
       .pipe(
-        tap((response) => {
+        switchMap((response) => {
           // El backend devuelve "jwt" o "token"
           const token = response.jwt || response.token || "";
           this.tokenSignal.set(token);
           this.rolSignal.set(response.rol);
           localStorage.setItem("token", token);
           localStorage.setItem("rol", response.rol);
+
+          // Obtener el usuario completo para guardar el nombre
+          return this.getCurrentUser().pipe(
+            tap((usuario) => {
+              localStorage.setItem("nombre", usuario.nombre || email);
+            })
+          );
         })
       );
   }
@@ -52,6 +59,7 @@ export class AuthService {
     this.rolSignal.set(null);
     localStorage.removeItem("token");
     localStorage.removeItem("rol");
+    localStorage.removeItem("nombre");
     this.router.navigate(["/login"]);
   }
 
@@ -80,5 +88,10 @@ export class AuthService {
 
   getCurrentUser(): Observable<Usuario> {
     return this.http.get<Usuario>(`${this.apiUrl}/me`);
+  }
+
+  // Método para obtener el nombre del usuario actual (para chat)
+  getNombre(): string | null {
+    return localStorage.getItem("nombre");
   }
 }

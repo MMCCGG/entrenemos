@@ -20,17 +20,16 @@ export class LoginComponent {
 
   onLogin() {
     this.authService.login(this.email, this.password).subscribe({
-      next: (response) => {
-        console.log("Respuesta del login:", response);
-        console.log("Rol recibido:", response.rol);
+      next: (usuario) => {
+        console.log("Usuario logueado:", usuario);
+        console.log("Rol recibido:", usuario.rol);
 
-        // El AuthService ya guarda el token y rol automáticamente
-        if (response.rol?.toUpperCase().trim() === "ADMIN") {
+        // El AuthService ya guarda el token, rol y nombre automáticamente
+        if (usuario.rol?.toUpperCase().trim() === "ADMIN") {
           this.router.navigate(["/admin/dashboard"]);
         } else {
           this.router.navigate(["/home"]);
         }
-
       },
       error: (err) => {
         console.error("Error en login:", err);

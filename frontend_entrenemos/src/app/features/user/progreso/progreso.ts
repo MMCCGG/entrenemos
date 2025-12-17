@@ -4,7 +4,6 @@ import { FormsModule } from "@angular/forms";
 import { Router, RouterModule } from "@angular/router";
 import { Header } from "../../../shared/components/header/header";
 import { BottomNav } from "../../../shared/components/bottom-nav/bottom-nav";
-import { WodTimerComponent } from "../../../shared/components/wod-timer/wod-timer";
 import { ProgresoService } from "../../../core/services/progreso.service";
 import { EjercicioService } from "../../../core/services/ejercicio.service";
 import { EntrenamientoService } from "../../../core/services/entrenamiento.service";
@@ -19,14 +18,7 @@ import { forkJoin } from "rxjs";
 
 @Component({
   selector: "app-progreso",
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterModule,
-    Header,
-    BottomNav,
-    WodTimerComponent,
-  ],
+  imports: [CommonModule, FormsModule, RouterModule, Header, BottomNav],
   templateUrl: "./progreso.html",
   styleUrl: "./progreso.css",
 })

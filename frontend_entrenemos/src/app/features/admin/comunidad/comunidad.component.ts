@@ -1,12 +1,12 @@
-import { Component } from '@angular/core';
+import { CommonModule } from "@angular/common";
+import { Component } from "@angular/core";
+import { ChatWindowComponent } from "../../chat/components/chat-window.component";
 
 @Component({
-  selector: 'app-comunidad',
+  selector: "app-comunidad",
   standalone: true,
-  imports: [],
-  templateUrl: './comunidad.component.html',
-  styleUrl: './comunidad.component.css'
+  imports: [CommonModule, ChatWindowComponent],
+  templateUrl: "./comunidad.component.html",
+  styleUrl: "./comunidad.component.css",
 })
-export class ComunidadComponent {
-
-}
+export class ComunidadComponent {}
