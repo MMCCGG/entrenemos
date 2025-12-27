@@ -1,13 +1,12 @@
 import { Component, OnInit, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { FormsModule } from "@angular/forms";
 import { Router, RouterModule } from "@angular/router";
 import { Header } from "../../../shared/components/header/header";
 import { BottomNav } from "../../../shared/components/bottom-nav/bottom-nav";
 import { ProgresoService } from "../../../core/services/progreso.service";
 import { EjercicioService } from "../../../core/services/ejercicio.service";
-import { EntrenamientoService } from "../../../core/services/entrenamiento.service";
 import { PlanUsuarioService } from "../../../core/services/plan-usuario.service";
+import { EntrenamientoService } from "../../../core/services/entrenamiento.service";
 import { AuthService } from "../../../core/services/auth.service";
 import { UsuariosService } from "../../../core/services/usuarios.service";
 import { Progreso as ProgresoModelo } from "../../../shared/models/progreso.model";
@@ -16,46 +15,52 @@ import { PlanUsuario } from "../../../shared/models/plan-usuario.model";
 import { Usuario } from "../../../shared/models/usuario";
 import { forkJoin } from "rxjs";
 
+interface ProgresoConEjercicio extends ProgresoModelo {
+  ejercicio?: Ejercicio;
+}
+
+interface ProgresoAgrupado {
+  ejercicio: Ejercicio;
+  progresos: ProgresoModelo[];
+  mejorPeso?: number;
+  mejorRepeticiones?: number;
+  mejorTiempo?: number;
+  totalSesiones: number;
+}
+
 @Component({
   selector: "app-progreso",
-  imports: [CommonModule, FormsModule, RouterModule, Header, BottomNav],
+  imports: [CommonModule, RouterModule, Header, BottomNav],
   templateUrl: "./progreso.html",
   styleUrl: "./progreso.css",
 })
 export class Progreso implements OnInit {
   private progresoService = inject(ProgresoService);
   private ejercicioService = inject(EjercicioService);
-  private entrenamientoService = inject(EntrenamientoService);
   private planUsuarioService = inject(PlanUsuarioService);
+  private entrenamientoService = inject(EntrenamientoService);
   private authService = inject(AuthService);
   private usuariosService = inject(UsuariosService);
   router = inject(Router);
 
-  // Datos del formulario
+  // Datos
+  progresos: ProgresoModelo[] = [];
   ejercicios: Ejercicio[] = [];
-  ejerciciosDelPlan: Ejercicio[] = []; // Ejercicios del plan activo
-  ejercicioSeleccionadoId: number | null = null;
-  peso: number | null = null;
-  repeticiones: number | null = null;
-  tiempo: number | null = null;
-  fecha: string = new Date().toISOString().split("T")[0]; // Fecha actual
-
-  // Usuario y plan activo
+  progresosAgrupados: ProgresoAgrupado[] = [];
   usuario: Usuario | null = null;
   usuarioId: number | null = null;
   planActivo: PlanUsuario | null = null;
+  ejerciciosIdsDelPlan: number[] = [];
 
   // Estados
-  guardando = false;
-  exito = false;
   error: string | null = null;
   cargando = false;
 
   ngOnInit(): void {
-    this.cargarUsuarioYPlan();
+    this.cargarDatos();
   }
 
-  async cargarUsuarioYPlan(): Promise<void> {
+  async cargarDatos(): Promise<void> {
     this.cargando = true;
     this.error = null;
 
@@ -67,7 +72,7 @@ export class Progreso implements OnInit {
     } else {
       console.warn("Progreso: No se pudo cargar el usuario");
       this.cargando = false;
-      this.cargarEjercicios();
+      this.error = "No se pudo cargar la información del usuario";
     }
   }
 
@@ -145,38 +150,46 @@ export class Progreso implements OnInit {
 
   cargarPlanActivo(): void {
     if (!this.usuarioId) {
-      console.warn("Progreso: No hay usuarioId para cargar plan");
-      this.cargarEjercicios();
+      this.cargando = false;
+      this.error = "No se pudo identificar al usuario";
       return;
     }
-
-    console.log(
-      "Progreso: Cargando plan activo para usuarioId:",
-      this.usuarioId
-    );
 
     // Intentar cargar desde el backend primero
     this.planUsuarioService.obtenerPlanActivo(this.usuarioId).subscribe({
       next: (plan) => {
         if (plan) {
-          console.log("Progreso: Plan cargado desde backend:", plan);
           this.planActivo = plan;
-          this.cargarEjerciciosDelPlan();
-          this.cargarEjercicios();
+          // Si el plan tiene entrenamiento con ejerciciosIds, usarlos
+          if (
+            plan.entrenamiento?.ejerciciosIds &&
+            plan.entrenamiento.ejerciciosIds.length > 0
+          ) {
+            this.ejerciciosIdsDelPlan = plan.entrenamiento.ejerciciosIds;
+            // Si no tiene ejercicios cargados, cargarlos
+            if (
+              !plan.entrenamiento.ejercicios ||
+              plan.entrenamiento.ejercicios.length === 0
+            ) {
+              this.cargarEjerciciosDelPlan();
+            } else {
+              this.cargarProgresos();
+            }
+          } else if (plan.entrenamientoId) {
+            // Si solo tiene entrenamientoId, cargar el entrenamiento completo
+            this.cargarEntrenamientoCompleto(plan.entrenamientoId);
+          } else {
+            this.cargarProgresos();
+          }
         } else {
-          console.log(
-            "Progreso: No hay plan en backend, intentando localStorage"
-          );
           // Fallback a localStorage
           this.cargarPlanDesdeLocalStorage();
-          this.cargarEjercicios();
         }
       },
       error: (err) => {
-        console.warn("Progreso: Error cargando plan desde backend:", err);
+        console.warn("Error cargando plan desde backend:", err);
         // Fallback a localStorage
         this.cargarPlanDesdeLocalStorage();
-        this.cargarEjercicios();
       },
     });
   }
@@ -184,327 +197,230 @@ export class Progreso implements OnInit {
   cargarPlanDesdeLocalStorage(): void {
     if (!this.usuarioId) {
       this.planActivo = null;
-      console.log("Progreso: No hay usuarioId, planActivo = null");
+      this.cargarProgresos();
       return;
     }
 
     const planGuardado = localStorage.getItem(`plan-activo-${this.usuarioId}`);
-    console.log("Progreso: Plan desde localStorage:", planGuardado);
-
     if (planGuardado) {
       try {
         const plan = JSON.parse(planGuardado);
-        console.log("Progreso: Plan parseado:", plan);
-
-        // Verificar que el plan tenga la estructura correcta
         if (plan && (plan.entrenamientoId || plan.entrenamiento)) {
           this.planActivo = plan;
-          console.log("Progreso: Plan activo asignado:", this.planActivo);
-
-          // Si el plan tiene entrenamientoId pero no entrenamiento completo, cargarlo
-          const planActivo = this.planActivo;
-          if (planActivo && planActivo.entrenamientoId) {
+          if (
+            plan.entrenamiento?.ejerciciosIds &&
+            plan.entrenamiento.ejerciciosIds.length > 0
+          ) {
+            this.ejerciciosIdsDelPlan = plan.entrenamiento.ejerciciosIds;
             if (
-              !planActivo.entrenamiento ||
-              !planActivo.entrenamiento.ejerciciosIds
+              !plan.entrenamiento.ejercicios ||
+              plan.entrenamiento.ejercicios.length === 0
             ) {
-              console.log(
-                "Progreso: Cargando entrenamiento completo para ID:",
-                planActivo.entrenamientoId
-              );
-              this.cargarEntrenamientoCompleto(planActivo.entrenamientoId);
-            } else {
-              console.log(
-                "Progreso: Plan tiene entrenamiento, cargando ejercicios"
-              );
               this.cargarEjerciciosDelPlan();
+            } else {
+              this.cargarProgresos();
             }
-          } else if (planActivo && planActivo.entrenamiento) {
-            console.log(
-              "Progreso: Plan tiene entrenamiento, cargando ejercicios"
-            );
-            this.cargarEjerciciosDelPlan();
+          } else if (plan.entrenamientoId) {
+            this.cargarEntrenamientoCompleto(plan.entrenamientoId);
           } else {
-            console.log(
-              "Progreso: Plan no tiene entrenamiento ni entrenamientoId"
-            );
+            this.cargarProgresos();
           }
         } else {
-          console.log(
-            "Progreso: Plan no válido (sin entrenamientoId ni entrenamiento)"
-          );
           this.planActivo = null;
+          this.cargarProgresos();
         }
       } catch (error) {
         console.error("Error parseando plan desde localStorage:", error);
         this.planActivo = null;
+        this.cargarProgresos();
       }
     } else {
-      console.log("Progreso: No hay plan guardado en localStorage");
       this.planActivo = null;
+      this.cargarProgresos();
     }
   }
 
   cargarEntrenamientoCompleto(entrenamientoId: number): void {
-    console.log(
-      "Progreso: Cargando entrenamiento completo, ID:",
-      entrenamientoId
-    );
     this.entrenamientoService.obtenerPorId(entrenamientoId).subscribe({
       next: (entrenamiento) => {
-        console.log("Progreso: Entrenamiento cargado:", entrenamiento);
         if (this.planActivo) {
           if (!this.planActivo.entrenamiento) {
             this.planActivo.entrenamiento = entrenamiento;
           } else {
-            // Actualizar con los datos del backend
             this.planActivo.entrenamiento = {
               ...this.planActivo.entrenamiento,
               ...entrenamiento,
             };
           }
-          console.log(
-            "Progreso: Plan actualizado con entrenamiento:",
-            this.planActivo
-          );
-          this.cargarEjerciciosDelPlan();
+          if (
+            this.planActivo.entrenamiento.ejerciciosIds &&
+            this.planActivo.entrenamiento.ejerciciosIds.length > 0
+          ) {
+            this.ejerciciosIdsDelPlan =
+              this.planActivo.entrenamiento.ejerciciosIds;
+            this.cargarEjerciciosDelPlan();
+          } else {
+            this.cargarProgresos();
+          }
         }
       },
       error: (err) => {
         console.error("Error cargando entrenamiento completo:", err);
-        // Intentar cargar ejercicios de todas formas
-        this.cargarEjerciciosDelPlan();
+        this.cargarProgresos();
       },
     });
   }
 
   cargarEjerciciosDelPlan(): void {
-    if (!this.planActivo) {
-      this.ejerciciosDelPlan = [];
+    if (
+      !this.planActivo ||
+      !this.ejerciciosIdsDelPlan ||
+      this.ejerciciosIdsDelPlan.length === 0
+    ) {
+      this.cargarProgresos();
       return;
     }
 
-    // Si el plan tiene entrenamiento con ejercicios ya cargados
-    if (
-      this.planActivo.entrenamiento?.ejercicios &&
-      this.planActivo.entrenamiento.ejercicios.length > 0
-    ) {
-      this.ejerciciosDelPlan = this.planActivo.entrenamiento.ejercicios;
-      return;
-    }
+    const observables = this.ejerciciosIdsDelPlan.map((id) =>
+      this.ejercicioService.obtenerPorId(id)
+    );
 
-    // Si tiene IDs de ejercicios, cargarlos
-    if (
-      this.planActivo.entrenamiento?.ejerciciosIds &&
-      this.planActivo.entrenamiento.ejerciciosIds.length > 0
-    ) {
-      const observables = this.planActivo.entrenamiento.ejerciciosIds.map(
-        (id) => this.ejercicioService.obtenerPorId(id)
-      );
-
-      forkJoin(observables).subscribe({
-        next: (ejercicios) => {
-          this.ejerciciosDelPlan = ejercicios;
-          if (this.planActivo?.entrenamiento) {
-            this.planActivo.entrenamiento.ejercicios = ejercicios;
-          }
-        },
-        error: (err) => {
-          console.error("Error cargando ejercicios del plan:", err);
-          this.ejerciciosDelPlan = [];
-        },
-      });
-    } else {
-      // Si no tiene ejerciciosIds, intentar cargar el entrenamiento completo
-      if (this.planActivo.entrenamientoId) {
-        this.ejercicioService.listar().subscribe({
-          next: (todosEjercicios) => {
-            // Intentar obtener el entrenamiento completo
-            // Por ahora, dejamos ejerciciosDelPlan vacío si no hay IDs
-            this.ejerciciosDelPlan = [];
-          },
-          error: () => {
-            this.ejerciciosDelPlan = [];
-          },
-        });
-      } else {
-        this.ejerciciosDelPlan = [];
-      }
-    }
-  }
-
-  cargarEjercicios(): void {
-    this.ejercicioService.listar().subscribe({
+    forkJoin(observables).subscribe({
       next: (ejercicios) => {
-        this.ejercicios = ejercicios;
-        this.cargando = false;
+        if (this.planActivo?.entrenamiento) {
+          this.planActivo.entrenamiento.ejercicios = ejercicios;
+        }
+        this.cargarProgresos();
       },
       error: (err) => {
-        console.error("Error cargando ejercicios:", err);
-        this.error = "Error al cargar los ejercicios";
-        this.cargando = false;
+        console.error("Error cargando ejercicios del plan:", err);
+        this.cargarProgresos();
       },
     });
   }
 
-  get ejerciciosDisponibles(): Ejercicio[] {
-    // Solo mostrar ejercicios del plan activo si existe
-    if (this.planActivo && this.ejerciciosDelPlan.length > 0) {
-      return this.ejerciciosDelPlan;
-    }
-    // Si no hay plan activo, no mostrar ejercicios
-    return [];
-  }
-
-  get tienePlanActivo(): boolean {
-    // Verificar que existe plan activo y tiene entrenamiento o entrenamientoId
-    const tienePlan = this.planActivo !== null;
-    const tieneEntrenamiento =
-      this.planActivo?.entrenamiento !== null &&
-      this.planActivo?.entrenamiento !== undefined;
-    const tieneEntrenamientoId =
-      this.planActivo?.entrenamientoId !== null &&
-      this.planActivo?.entrenamientoId !== undefined;
-
-    return tienePlan && (tieneEntrenamiento || tieneEntrenamientoId);
-  }
-
-  registrarProgreso(): void {
-    // Validaciones
-    if (!this.ejercicioSeleccionadoId) {
-      this.error = "Debes seleccionar un ejercicio";
-      return;
-    }
-
-    if (!this.peso && !this.repeticiones && !this.tiempo) {
-      this.error = "Debes registrar al menos peso, repeticiones o tiempo";
-      return;
-    }
-
+  cargarProgresos(): void {
     if (!this.usuarioId) {
+      this.cargando = false;
       this.error = "No se pudo identificar al usuario";
       return;
     }
 
-    // Preparar datos
-    const progreso: ProgresoModelo = {
-      fecha: this.fecha,
-      peso: this.peso || undefined,
-      repeticiones: this.repeticiones || undefined,
-      tiempo: this.tiempo || undefined,
-      usuarioId: this.usuarioId,
-      ejercicioId: this.ejercicioSeleccionadoId,
-    };
-
-    this.guardando = true;
-    this.error = null;
-    this.exito = false;
-
-    this.progresoService.crear(progreso).subscribe({
-      next: () => {
-        this.exito = true;
-        this.guardando = false;
-
-        // Si hay un plan activo, marcar el ejercicio como completado
-        if (this.planActivo && this.ejercicioSeleccionadoId) {
-          this.marcarEjercicioCompletadoEnPlan(this.ejercicioSeleccionadoId);
+    // Cargar progresos y ejercicios en paralelo
+    forkJoin({
+      progresos: this.progresoService.obtenerPorUsuario(this.usuarioId),
+      ejercicios: this.ejercicioService.listar(),
+    }).subscribe({
+      next: ({ progresos, ejercicios }) => {
+        // Filtrar progresos por ejercicios del plan activo
+        let progresosFiltrados = progresos;
+        if (this.planActivo && this.ejerciciosIdsDelPlan.length > 0) {
+          progresosFiltrados = progresos.filter((progreso) =>
+            this.ejerciciosIdsDelPlan.includes(progreso.ejercicioId)
+          );
         }
 
-        this.resetearFormulario();
-        // Ocultar mensaje de éxito después de 3 segundos
-        setTimeout(() => {
-          this.exito = false;
-        }, 3000);
+        this.progresos = progresosFiltrados.sort(
+          (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+        );
+        this.ejercicios = ejercicios;
+        this.agruparProgresos();
+        this.cargando = false;
       },
       error: (err) => {
-        console.error("Error guardando progreso:", err);
-        this.error = "Error al guardar el progreso";
-        this.guardando = false;
+        console.error("Error cargando progresos:", err);
+        this.error = "Error al cargar el historial de progreso";
+        this.cargando = false;
       },
     });
   }
 
-  marcarEjercicioCompletadoEnPlan(ejercicioId: number): void {
-    if (!this.planActivo || !this.planActivo.id) {
-      // Si no hay ID del plan (solo localStorage), actualizar localmente
-      if (this.planActivo) {
-        if (!this.planActivo.ejerciciosCompletados) {
-          this.planActivo.ejerciciosCompletados = [];
-        }
-        if (!this.planActivo.ejerciciosCompletados.includes(ejercicioId)) {
-          this.planActivo.ejerciciosCompletados.push(ejercicioId);
-          this.planActivo.fechaUltimaSesion = new Date()
-            .toISOString()
-            .split("T")[0];
+  agruparProgresos(): void {
+    const agrupados = new Map<number, ProgresoAgrupado>();
 
-          // Guardar en localStorage
-          if (this.usuarioId) {
-            localStorage.setItem(
-              `plan-activo-${this.usuarioId}`,
-              JSON.stringify(this.planActivo)
-            );
-          }
+    // Agrupar por ejercicio
+    this.progresos.forEach((progreso) => {
+      const ejercicio = this.ejercicios.find(
+        (e) => e.id === progreso.ejercicioId
+      );
+
+      if (!ejercicio) return;
+
+      if (!agrupados.has(progreso.ejercicioId)) {
+        agrupados.set(progreso.ejercicioId, {
+          ejercicio,
+          progresos: [],
+          totalSesiones: 0,
+        });
+      }
+
+      const grupo = agrupados.get(progreso.ejercicioId)!;
+      grupo.progresos.push(progreso);
+      grupo.totalSesiones++;
+
+      // Calcular mejores marcas
+      if (progreso.peso !== undefined && progreso.peso !== null) {
+        if (
+          grupo.mejorPeso === undefined ||
+          progreso.peso > grupo.mejorPeso
+        ) {
+          grupo.mejorPeso = progreso.peso;
         }
       }
-      return;
+
+      if (
+        progreso.repeticiones !== undefined &&
+        progreso.repeticiones !== null
+      ) {
+        if (
+          grupo.mejorRepeticiones === undefined ||
+          progreso.repeticiones > grupo.mejorRepeticiones
+        ) {
+          grupo.mejorRepeticiones = progreso.repeticiones;
+        }
+      }
+
+      if (progreso.tiempo !== undefined && progreso.tiempo !== null) {
+        if (
+          grupo.mejorTiempo === undefined ||
+          progreso.tiempo < grupo.mejorTiempo
+        ) {
+          grupo.mejorTiempo = progreso.tiempo;
+        }
+      }
+    });
+
+    // Ordenar por fecha más reciente
+    this.progresosAgrupados = Array.from(agrupados.values()).sort((a, b) => {
+      const fechaA = a.progresos[0]?.fecha || "";
+      const fechaB = b.progresos[0]?.fecha || "";
+      return new Date(fechaB).getTime() - new Date(fechaA).getTime();
+    });
+  }
+
+  formatearFecha(fecha: string): string {
+    const date = new Date(fecha);
+    return date.toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  }
+
+  formatearTiempo(segundos: number): string {
+    if (segundos < 60) {
+      return `${Math.round(segundos)}s`;
     }
-
-    // Intentar marcar en el backend
-    this.planUsuarioService
-      .marcarEjercicioCompletado(this.planActivo.id, ejercicioId)
-      .subscribe({
-        next: (planActualizado) => {
-          this.planActivo = planActualizado;
-          // Actualizar también localStorage
-          if (this.usuarioId) {
-            localStorage.setItem(
-              `plan-activo-${this.usuarioId}`,
-              JSON.stringify(this.planActivo)
-            );
-          }
-        },
-        error: (err) => {
-          console.warn("Error marcando ejercicio completado en backend:", err);
-          // Actualizar localmente como fallback
-          if (this.planActivo) {
-            if (!this.planActivo.ejerciciosCompletados) {
-              this.planActivo.ejerciciosCompletados = [];
-            }
-            if (!this.planActivo.ejerciciosCompletados.includes(ejercicioId)) {
-              this.planActivo.ejerciciosCompletados.push(ejercicioId);
-              this.planActivo.fechaUltimaSesion = new Date()
-                .toISOString()
-                .split("T")[0];
-
-              if (this.usuarioId) {
-                localStorage.setItem(
-                  `plan-activo-${this.usuarioId}`,
-                  JSON.stringify(this.planActivo)
-                );
-              }
-            }
-          }
-        },
-      });
+    const minutos = Math.floor(segundos / 60);
+    const segs = Math.round(segundos % 60);
+    return `${minutos}m ${segs}s`;
   }
 
-  resetearFormulario(): void {
-    this.ejercicioSeleccionadoId = null;
-    this.peso = null;
-    this.repeticiones = null;
-    this.tiempo = null;
-    this.fecha = new Date().toISOString().split("T")[0];
-  }
-
-  esEjercicioCompletado(ejercicioId: number): boolean {
-    if (!this.planActivo) return false;
+  get tienePlanActivo(): boolean {
     return (
-      this.planActivo.ejerciciosCompletados?.includes(ejercicioId) || false
+      this.planActivo !== null &&
+      this.ejerciciosIdsDelPlan !== null &&
+      this.ejerciciosIdsDelPlan.length > 0
     );
-  }
-
-  obtenerProgresoPlan(): number {
-    if (!this.planActivo) return 0;
-    return this.planUsuarioService.calcularProgreso(this.planActivo);
   }
 }

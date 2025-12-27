@@ -19,33 +19,6 @@
             }
         </section>
 
-        <!-- Estadísticas rápidas -->
-        @if (usuario && !loading) {
-        <section class="stats-section">
-            <div class="stat-card">
-                <div class="stat-icon">📊</div>
-                <div class="stat-content">
-                    <p class="stat-value">{{ totalProgresos }}</p>
-                    <p class="stat-label">Sesiones</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🎯</div>
-                <div class="stat-content">
-                    <p class="stat-value">{{ programasCompletados }}</p>
-                    <p class="stat-label">Completados</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">💪</div>
-                <div class="stat-content">
-                    <p class="stat-value">{{ totalProgramas }}</p>
-                    <p class="stat-label">Programas</p>
-                </div>
-            </div>
-        </section>
-        }
-
         <!-- Programas destacados -->
         <section class="featured-programs">
             <div class="section-header">

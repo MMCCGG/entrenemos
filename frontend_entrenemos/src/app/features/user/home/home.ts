@@ -31,11 +31,6 @@ export class Home implements OnInit {
   loading = true;
   error: string | null = null;
 
-  // Estadísticas
-  totalProgramas = 0;
-  totalProgresos = 0;
-  programasCompletados = 0;
-
   ngOnInit() {
     this.cargarDatos();
   }
@@ -48,7 +43,6 @@ export class Home implements OnInit {
     this.entrenamientoService.listar().subscribe({
       next: (programas) => {
         this.programas = programas;
-        this.totalProgramas = programas.length;
         // Mostrar solo los primeros 3 como destacados
         this.programasDestacados = programas.slice(0, 3);
         this.loading = false;
@@ -91,9 +85,6 @@ export class Home implements OnInit {
     this.progresoService.obtenerPorUsuario(usuarioId).subscribe({
       next: (progresos) => {
         this.progresos = progresos;
-        this.totalProgresos = progresos.length;
-        // Calcular programas completados (simplificado)
-        this.programasCompletados = Math.floor(progresos.length / 3);
       },
       error: (err) => {
         console.error("Error al cargar progresos:", err);

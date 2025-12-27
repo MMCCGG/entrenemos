@@ -1,7 +1,109 @@
 <div class="page-wrapper">
-    <app-header />
-    <div class="page-container">
-        <h1>📊 Progreso</h1>
+  <app-header />
+  <div class="page-container">
+    <h1>Mi Progreso</h1>
+
+    <!-- Estado de carga -->
+    <div *ngIf="cargando" class="estado-carga">
+      <div class="spinner"></div>
+      <p>Cargando tu progreso...</p>
     </div>
-    <app-bottom-nav />
+
+    <!-- Mensaje de error -->
+    <div *ngIf="error && !cargando" class="mensaje-error">
+      <p>{{ error }}</p>
+    </div>
+
+    <!-- Contenido principal -->
+    <div *ngIf="!cargando && !error">
+      <!-- Mensaje sin plan activo -->
+      <div *ngIf="!tienePlanActivo" class="sin-plan-info">
+        <div class="sin-plan-mensaje">
+          <div class="sin-plan-icon">📋</div>
+          <h3>No tienes un plan activo</h3>
+          <p>
+            Para ver tu progreso, necesitas tener un plan de entrenamiento
+            activo. Ve a la página de
+            <a routerLink="/rutina" class="btn-seleccionar-plan">Rutina</a> para
+            seleccionar un plan.
+          </p>
+        </div>
+      </div>
+
+      <!-- Información del plan activo -->
+      <div *ngIf="tienePlanActivo && planActivo?.entrenamiento" class="plan-activo-info">
+        <div class="plan-activo-header">
+          <h3>{{ planActivo?.entrenamiento?.nombre }}</h3>
+          <p *ngIf="planActivo?.entrenamiento?.descripcion" class="plan-descripcion">
+            {{ planActivo?.entrenamiento?.descripcion }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Sin progreso (con plan activo) -->
+      <div *ngIf="tienePlanActivo && progresos.length === 0" class="sin-progreso">
+        <div class="sin-progreso-icon">📊</div>
+        <h2>Aún no tienes progreso registrado</h2>
+        <p>
+          Ve a la página de <a routerLink="/rutina">Rutina</a> para comenzar a
+          registrar tus entrenamientos y ejercicios del plan activo.
+        </p>
+      </div>
+
+      <!-- Lista de progresos agrupados por ejercicio -->
+      <div *ngIf="tienePlanActivo && progresos.length > 0" class="progresos-container">
+        <h2 class="seccion-titulo">Historial por Ejercicio</h2>
+
+        <div class="ejercicio-grupo" *ngFor="let grupo of progresosAgrupados">
+          <div class="ejercicio-header">
+            <h3 class="ejercicio-nombre">{{ grupo.ejercicio.nombre }}</h3>
+            <span class="ejercicio-sesiones"
+              >{{ grupo.totalSesiones }}
+              {{ grupo.totalSesiones === 1 ? "sesión" : "sesiones" }}</span
+            >
+          </div>
+
+          <!-- Mejores marcas -->
+          <div class="mejores-marcas" *ngIf="grupo.mejorPeso || grupo.mejorRepeticiones || grupo.mejorTiempo">
+            <div class="marca-item" *ngIf="grupo.mejorPeso">
+              <span class="marca-label">Mejor peso:</span>
+              <span class="marca-value">{{ grupo.mejorPeso }} kg</span>
+            </div>
+            <div class="marca-item" *ngIf="grupo.mejorRepeticiones">
+              <span class="marca-label">Mejores repeticiones:</span>
+              <span class="marca-value">{{ grupo.mejorRepeticiones }}</span>
+            </div>
+            <div class="marca-item" *ngIf="grupo.mejorTiempo">
+              <span class="marca-label">Mejor tiempo:</span>
+              <span class="marca-value">{{ formatearTiempo(grupo.mejorTiempo) }}</span>
+            </div>
+          </div>
+
+          <!-- Historial de registros -->
+          <div class="historial-registros">
+            <div
+              class="registro-item"
+              *ngFor="let progreso of grupo.progresos"
+            >
+              <div class="registro-fecha">
+                {{ formatearFecha(progreso.fecha) }}
+              </div>
+              <div class="registro-metricas">
+                <span class="metrica" *ngIf="progreso.peso">
+                  💪 {{ progreso.peso }} kg
+                </span>
+                <span class="metrica" *ngIf="progreso.repeticiones">
+                  🔄 {{ progreso.repeticiones }} reps
+                </span>
+                <span class="metrica" *ngIf="progreso.tiempo">
+                  ⏱️ {{ formatearTiempo(progreso.tiempo) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <app-bottom-nav />
 </div>
